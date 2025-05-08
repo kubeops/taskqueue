@@ -12,6 +12,18 @@
 - kubectl version v1.11.3+.
 - Access to a Kubernetes v1.11.3+ cluster.
 
+### Generate api
+
+```sh
+kubebuilder init --domain k8s.appscode.com
+kubebuilder edit --multigroup=true
+
+kubebuilder create api --group batch --version v1alpha1 --kind TaskQueue --namespaced=false
+kubebuilder create api --group batch --version v1alpha1 --kind PendingTask --namespaced=false
+
+kubebuilder create api --group ops.batch --version v1alpha1 --kind TaskTrigger --namespaced=false
+```
+
 ### To Deploy on the cluster
 **Build and push your image to the location specified by `IMG`:**
 
