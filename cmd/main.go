@@ -38,6 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	batchv1alpha1 "kubeops.dev/taskqueue/api/batch/v1alpha1"
+	opsbatchv1alpha1 "kubeops.dev/taskqueue/api/ops/v1alpha1"
 	batchcontroller "kubeops.dev/taskqueue/internal/controller/batch"
 	// +kubebuilder:scaffold:imports
 )
@@ -51,6 +52,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(batchv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(opsbatchv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 

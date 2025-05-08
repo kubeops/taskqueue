@@ -2,4 +2,5 @@
 resources:
 - batch_v1alpha1_taskqueue.yaml
 - batch_v1alpha1_pendingtask.yaml
+- ops.batch_v1alpha1_tasktrigger.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

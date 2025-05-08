@@ -4,6 +4,7 @@
 resources:
 - bases/batch.k8s.appscode.com_taskqueues.yaml
 - bases/batch.k8s.appscode.com_pendingtasks.yaml
+- bases/ops.batch.k8s.appscode.com_tasktriggers.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
