@@ -1,0 +1,9 @@
+apiVersion: batch.k8s.appscode.com/v1alpha1
+kind: PendingTask
+metadata:
+  labels:
+    app.kubernetes.io/name: taskqueue
+    app.kubernetes.io/managed-by: kustomize
+  name: pendingtask-sample
+spec:
+  # TODO(user): Add fields here

@@ -1,0 +1,5 @@
+## Append samples of your project ##
+resources:
+- batch_v1alpha1_taskqueue.yaml
+- batch_v1alpha1_pendingtask.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
