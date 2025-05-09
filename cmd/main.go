@@ -17,11 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
-
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -29,8 +30,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
+	runtime_client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
@@ -46,6 +49,7 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+	queue    workqueue.Typed[string]
 )
 
 func init() {
@@ -204,9 +208,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	queue, err = func() (workqueue.Typed[string], error) {
+		wq := workqueue.NewTyped[string]()
+		pendingTaskList := batchv1alpha1.PendingTaskList{}
+		if err := mgr.GetClient().List(context.Background(), &pendingTaskList, &runtime_client.ListOptions{}); err != nil {
+			setupLog.Error(err, "failed to list pendingtasklist")
+			os.Exit(1)
+		}
+		for _, pt := range pendingTaskList.Items {
+			wq.Add(pt.Name)
+		}
+		return *wq, nil
+	}()
+
 	if err = (&batchcontroller.TaskQueueReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Queue:  &queue,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TaskQueue")
 		os.Exit(1)

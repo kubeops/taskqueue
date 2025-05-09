@@ -18,25 +18,8 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// PendingTaskSpec defines the desired state of PendingTask.
-type PendingTaskSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of PendingTask. Edit pendingtask_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-}
-
-// PendingTaskStatus defines the observed state of PendingTask.
-type PendingTaskStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
@@ -49,6 +32,22 @@ type PendingTask struct {
 
 	Spec   PendingTaskSpec   `json:"spec,omitempty"`
 	Status PendingTaskStatus `json:"status,omitempty"`
+}
+
+// PendingTaskSpec defines the desired state of PendingTask.
+type PendingTaskSpec struct {
+	// Task identifies the resource type that the taskQueue is responsible for triggering.
+	Task UnitTask `json:"task,omitempty"`
+
+	// Resource contains the raw YAML/JSON representation of the Kubernetes resource
+	// to be triggered by the task queue.
+	Resource runtime.RawExtension `json:"resource,omitempty"`
+}
+
+// PendingTaskStatus defines the observed state of PendingTask.
+type PendingTaskStatus struct {
+	// TaskQueueName is the name of the taskQueue that is responsible for triggering this task.
+	TaskQueueName string `json:"taskQueueName,omitempty"`
 }
 
 // +kubebuilder:object:root=true

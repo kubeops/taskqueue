@@ -18,6 +18,7 @@ package batch
 
 import (
 	"context"
+	"k8s.io/client-go/util/workqueue"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -30,6 +31,7 @@ import (
 // TaskQueueReconciler reconciles a TaskQueue object
 type TaskQueueReconciler struct {
 	client.Client
+	Queue  *workqueue.Typed[string]
 	Scheme *runtime.Scheme
 }
 

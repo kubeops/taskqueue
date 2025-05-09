@@ -17,26 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// TaskQueueSpec defines the desired state of TaskQueue.
-type TaskQueueSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of TaskQueue. Edit taskqueue_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-}
-
-// TaskQueueStatus defines the observed state of TaskQueue.
-type TaskQueueStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
@@ -51,8 +34,83 @@ type TaskQueue struct {
 	Status TaskQueueStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+// TaskQueueSpec defines the desired state of TaskQueue.
+type TaskQueueSpec struct {
+	// NumberOfConcurrentTasks specifies how many tasks can run concurrently.
+	// Defaults to 20 if not set.
+	// +kubebuilder:default=20
+	// +optional
+	NumberOfConcurrentTasks int `json:"numberOfConcurrentTasks,omitempty"`
 
+	// Tasks represents the lists of tasks that this queue is responsible for processing.
+	Tasks []UnitTask `json:"tasks,omitempty"`
+
+	// Rules defines ObjectPhaseRules. It contains three identification rules of successful phase of the object,
+	// progressing phase of the object & failed phase of the object.
+	// Example:
+	// rules:
+	//   success:    `has(self.status.phase) && self.status.phase == 'Successful'`
+	//   inProgress: `has(self.status.phase) && self.status.phase == 'Progressing'`
+	//   failed:     `has(self.status.phase) && self.status.phase == 'Failed'`
+	Rules ObjectPhaseRules `json:"rules"`
+
+	// LastTriggeredTasksHistory specifies how many history of triggeredTask will display in the status section.
+	// Defaults to 20 if not set.
+	// +kubebuilder:default=20
+	// +optional
+	LastTriggeredTasksHistory int `json:"lastTriggeredTasksHistory,omitempty"`
+}
+
+// ObjectPhaseRules defines three identification rules of successful phase of the object,
+// progressing phase of the object & failed execution of the object.
+// To specifies any field of the Operation object, the rule must start with the word `self`.
+// Example:
+//
+//	.status.phase -> self.status.phase
+//	.status.observedGeneration -> self.status.observedGeneration
+//
+// The rules can be any valid expression supported by CEL(Common Expression Language).
+// Ref: https://github.com/google/cel-spec
+type ObjectPhaseRules struct {
+	// Success defines a rule to identify the successful execution of the operation.
+	// Example:
+	//   success: `has(self.status.phase) && self.status.phase == 'Successful'`
+	// Here self.status.phase is pointing to .status.phase field of the Operation object.
+	// When .status.phase field presents and becomes `Successful`, the Success rule will satisfy.
+	Success string `json:"success"`
+
+	// InProgress defines a rule to identify that applied operation is progressing.
+	// Example:
+	//   inProgress: `has(self.status.phase) && self.status.phase == 'Progressing'`
+	// Here self.status.phase is pointing to .status.phase field of the Operation object.
+	// When .status.phase field presents and becomes `Progressing`, the InProgress rule will satisfy.
+	InProgress string `json:"inProgress"`
+
+	// Failed defines a rule to identify that applied operation is failed.
+	// Example:
+	//   inProgress: `has(self.status.phase) && self.status.phase == 'Failed'`
+	// Here self.status.phase is pointing to .status.phase field of the Operation object.
+	// When .status.phase field presents and becomes `Failed`, the Failed rule will satisfy.
+	Failed string `json:"failed"`
+}
+
+// TaskQueueStatus defines the observed state of TaskQueue.
+type TaskQueueStatus struct {
+	// LastExecutionTime indicates when the last task was executed.
+	// +optional
+	LastExecutionTime *metav1.Time `json:"lastExecutionTime,omitempty"`
+
+	// LastTriggeredTasks contains references to the most recently triggered tasks.
+	// +optional
+	LastTriggeredTasks []v1.TypedObjectReference `json:"lastTriggeredTasks,omitempty"`
+}
+
+type UnitTask struct {
+	Kind     string `json:"kind,omitempty"`
+	APIGroup string `json:"apiGroup,omitempty"`
+}
+
+// +kubebuilder:object:root=true
 // TaskQueueList contains a list of TaskQueue.
 type TaskQueueList struct {
 	metav1.TypeMeta `json:",inline"`
