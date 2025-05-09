@@ -39,13 +39,73 @@ spec:
           spec:
             description: PendingTaskSpec defines the desired state of PendingTask.
             properties:
-              foo:
-                description: Foo is an example field of PendingTask. Edit pendingtask_types.go
-                  to remove/update
-                type: string
+              resource:
+                description: |-
+                  Resource contains the raw YAML/JSON representation of the Kubernetes resource
+                  to be triggered by the task queue.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              task:
+                description: Task identifies the resource type that the taskQueue
+                  is responsible for triggering.
+                properties:
+                  rules:
+                    description: |-
+                      Rules defines ObjectPhaseRules. It contains three identification rules of successful phase of the object,
+                      progressing phase of the object & failed phase of the object.
+                      Example:
+                      rules:
+                        success:    `has(self.status.phase) && self.status.phase == 'Successful'`
+                        inProgress: `has(self.status.phase) && self.status.phase == 'Progressing'`
+                        failed:     `has(self.status.phase) && self.status.phase == 'Failed'`
+                    properties:
+                      failed:
+                        description: |-
+                          Failed defines a rule to identify that applied operation is failed.
+                          Example:
+                            inProgress: `has(self.status.phase) && self.status.phase == 'Failed'`
+                          Here self.status.phase is pointing to .status.phase field of the Operation object.
+                          When .status.phase field presents and becomes `Failed`, the Failed rule will satisfy.
+                        type: string
+                      inProgress:
+                        description: |-
+                          InProgress defines a rule to identify that applied operation is progressing.
+                          Example:
+                            inProgress: `has(self.status.phase) && self.status.phase == 'Progressing'`
+                          Here self.status.phase is pointing to .status.phase field of the Operation object.
+                          When .status.phase field presents and becomes `Progressing`, the InProgress rule will satisfy.
+                        type: string
+                      success:
+                        description: |-
+                          Success defines a rule to identify the successful execution of the operation.
+                          Example:
+                            success: `has(self.status.phase) && self.status.phase == 'Successful'`
+                          Here self.status.phase is pointing to .status.phase field of the Operation object.
+                          When .status.phase field presents and becomes `Successful`, the Success rule will satisfy.
+                        type: string
+                    required:
+                    - failed
+                    - inProgress
+                    - success
+                    type: object
+                  type:
+                    properties:
+                      apiGroup:
+                        type: string
+                      kind:
+                        type: string
+                    type: object
+                required:
+                - rules
+                type: object
             type: object
           status:
             description: PendingTaskStatus defines the observed state of PendingTask.
+            properties:
+              taskQueueName:
+                description: TaskQueueName is the name of the taskQueue that is responsible
+                  for triggering this task.
+                type: string
             type: object
         type: object
     served: true

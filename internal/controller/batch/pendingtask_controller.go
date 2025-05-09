@@ -18,6 +18,10 @@ package batch
 
 import (
 	"context"
+	"fmt"
+	"k8s.io/client-go/util/workqueue"
+	"k8s.io/klog/v2"
+	"sync"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -30,7 +34,10 @@ import (
 // PendingTaskReconciler reconciles a PendingTask object
 type PendingTaskReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme      *runtime.Scheme
+	MapOfQueues map[string]*workqueue.Typed[string]
+	MapOfTasks  map[string]struct{}
+	Mu          sync.RWMutex
 }
 
 // +kubebuilder:rbac:groups=batch.k8s.appscode.com,resources=pendingtasks,verbs=get;list;watch;create;update;patch;delete
@@ -47,11 +54,58 @@ type PendingTaskReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.20.4/pkg/reconcile
 func (r *PendingTaskReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = logf.FromContext(ctx)
+	logger := logf.FromContext(ctx)
+	logger.Info("Reconciling PendingTask", "name", req.Name, "namespace", req.Namespace)
 
-	// TODO(user): your logic here
+	key := req.NamespacedName.String()
+	if r.checkExists(key) {
+		return ctrl.Result{}, nil
+	}
 
+	ps := &batchv1alpha1.PendingTask{}
+	if err := r.Get(ctx, req.NamespacedName, ps); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	tqName, err := r.getMatchedTaskQueueName(ps.Spec.Task)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	r.Mu.Lock()
+	defer r.Mu.Unlock()
+	queue, exists := r.MapOfQueues[tqName]
+	if !exists {
+		klog.Infof("Queue for key '%s' not found, creating a new one.\n", tqName)
+		queue = workqueue.NewTyped[string]()
+		r.MapOfQueues[tqName] = queue
+	}
+
+	queue.Add(key)
+	r.MapOfTasks[key] = struct{}{}
 	return ctrl.Result{}, nil
+}
+
+func (r *PendingTaskReconciler) getMatchedTaskQueueName(task batchv1alpha1.UnitTask) (string, error) {
+	taskQueueList := batchv1alpha1.TaskQueueList{}
+	if err := r.Client.List(context.Background(), &taskQueueList, &client.ListOptions{}); err != nil {
+		return "", fmt.Errorf("failed to list task queues: %w", err)
+	}
+	for _, tq := range taskQueueList.Items {
+		for _, t := range tq.Spec.Tasks {
+			if t.Type.Kind == task.Type.Kind && t.Type.APIGroup == task.Type.APIGroup {
+				return tq.Name, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("no matching task queue found for task: %s/%s", task.Type.Kind, task.Type.APIGroup)
+}
+
+func (r *PendingTaskReconciler) checkExists(item string) bool {
+	r.Mu.RLocker()
+	defer r.Mu.RUnlock()
+	_, exists := r.MapOfTasks[item]
+	return exists
 }
 
 // SetupWithManager sets up the controller with the Manager.

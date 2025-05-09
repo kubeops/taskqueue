@@ -34,6 +34,7 @@ type TaskTriggerSpec struct {
 
 // TaskTriggerStatus defines the observed state of TaskTrigger.
 type TaskTriggerStatus struct {
+	Phase string `json:"phase,omitempty"`
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }

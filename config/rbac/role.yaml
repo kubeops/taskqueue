@@ -8,7 +8,6 @@ rules:
   - batch.k8s.appscode.com
   resources:
   - pendingtasks
-  - taskqueues
   verbs:
   - create
   - delete
@@ -21,14 +20,12 @@ rules:
   - batch.k8s.appscode.com
   resources:
   - pendingtasks/finalizers
-  - taskqueues/finalizers
   verbs:
   - update
 - apiGroups:
   - batch.k8s.appscode.com
   resources:
   - pendingtasks/status
-  - taskqueues/status
   verbs:
   - get
   - patch
