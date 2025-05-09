@@ -17,11 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"os"
 	"path/filepath"
-
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -29,8 +29,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
+	runtime_client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
@@ -44,8 +46,10 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme      = runtime.NewScheme()
+	setupLog    = ctrl.Log.WithName("setup")
+	mapOfQueues map[string]*workqueue.Typed[string]
+	mapOfTasks  map[string]struct{}
 )
 
 func init() {
@@ -203,17 +207,30 @@ func main() {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
-
+	mapOfQueues = make(map[string]*workqueue.Typed[string])
+	mapOfTasks = make(map[string]struct{})
+	//if err := mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
+	//	initializeMapOfQueues(mgr.GetClient())
+	//	return nil
+	//})); err != nil {
+	//	setupLog.Error(err, "unable to add mapOfQueues initializer")
+	//	os.Exit(1)
+	//}
 	if err = (&batchcontroller.TaskQueueReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:      mgr.GetClient(),
+		Scheme:      mgr.GetScheme(),
+		MapOfQueues: mapOfQueues,
+		MapOfTasks:  mapOfTasks,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TaskQueue")
 		os.Exit(1)
 	}
+
 	if err = (&batchcontroller.PendingTaskReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:      mgr.GetClient(),
+		Scheme:      mgr.GetScheme(),
+		MapOfQueues: mapOfQueues,
+		MapOfTasks:  mapOfTasks,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "PendingTask")
 		os.Exit(1)
@@ -249,5 +266,41 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
+	}
+}
+func initializeMapOfQueues(client runtime_client.Client) {
+	pendingTaskList := batchv1alpha1.PendingTaskList{}
+	if err := client.List(context.Background(), &pendingTaskList, &runtime_client.ListOptions{}); err != nil {
+		setupLog.Error(err, "failed to list pendingtasklist")
+		os.Exit(1)
+	}
+
+	taskQueueList := batchv1alpha1.TaskQueueList{}
+	if err := client.List(context.Background(), &taskQueueList, &runtime_client.ListOptions{}); err != nil {
+		setupLog.Error(err, "failed to list taskqueuelist")
+		os.Exit(1)
+	}
+
+	mapOfQueues = make(map[string]*workqueue.Typed[string])
+	mapOfTasks = make(map[string]struct{})
+	for _, pt := range pendingTaskList.Items {
+		for _, tq := range taskQueueList.Items {
+			for _, task := range tq.Spec.Tasks {
+				if task.Type.Kind == pt.Spec.TaskType.Kind &&
+					task.Type.APIGroup == pt.Spec.TaskType.APIGroup {
+					queue, exists := mapOfQueues[tq.Name]
+					if !exists {
+						setupLog.Info("Queue for key '%s' not found, creating a new one.\n", tq.Name)
+						newQueue := workqueue.NewTyped[string]()
+						mapOfQueues[tq.Name] = newQueue
+						queue = newQueue
+					}
+					queue.Add(pt.Name)
+					mapOfQueues[tq.Name] = queue
+					mapOfTasks[pt.Name] = struct{}{}
+
+				}
+			}
+		}
 	}
 }

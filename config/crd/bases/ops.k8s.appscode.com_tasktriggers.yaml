@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.2
-  name: pendingtasks.batch.k8s.appscode.com
+  name: tasktriggers.ops.k8s.appscode.com
 spec:
-  group: batch.k8s.appscode.com
+  group: ops.k8s.appscode.com
   names:
-    kind: PendingTask
-    listKind: PendingTaskList
-    plural: pendingtasks
-    singular: pendingtask
+    kind: TaskTrigger
+    listKind: TaskTriggerList
+    plural: tasktriggers
+    singular: tasktrigger
   scope: Cluster
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: PendingTask is the Schema for the pendingtasks API.
+        description: TaskTrigger is the Schema for the tasktriggers API.
         properties:
           apiVersion:
             description: |-
@@ -37,30 +37,17 @@ spec:
           metadata:
             type: object
           spec:
-            description: PendingTaskSpec defines the desired state of PendingTask.
+            description: TaskTriggerSpec defines the desired state of TaskTrigger.
             properties:
-              resource:
-                description: |-
-                  Resource contains the raw YAML/JSON representation of the Kubernetes resource
-                  to be triggered by the task queue.
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              taskType:
-                description: TaskType identifies the resource type that the taskQueue
-                  is responsible for triggering.
-                properties:
-                  apiGroup:
-                    type: string
-                  kind:
-                    type: string
-                type: object
+              foo:
+                description: Foo is an example field of TaskTrigger. Edit tasktrigger_types.go
+                  to remove/update
+                type: string
             type: object
           status:
-            description: PendingTaskStatus defines the observed state of PendingTask.
+            description: TaskTriggerStatus defines the observed state of TaskTrigger.
             properties:
-              taskQueueName:
-                description: TaskQueueName is the name of the taskQueue that is responsible
-                  for triggering this task.
+              phase:
                 type: string
             type: object
         type: object

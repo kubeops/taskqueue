@@ -1,0 +1,15 @@
+apiVersion: batch.k8s.appscode.com/v1alpha1
+kind: TaskQueue
+metadata:
+  name: taskqueue-sample
+spec:
+  maxConcurrentTasks: 10
+  tasks:
+    - type:
+        kind: TaskTrigger
+        apiGroup: ops.k8s.appscode.com
+      rules:
+        success: "has(self.status.phase) && self.status.phase == 'Successful'"
+        inProgress: "has(self.status.phase) && self.status.phase == 'Progressing'"
+        failed: "has(self.status.phase) && self.status.phase == 'Failed'"
+  lastTriggeredTasksHistory: 10

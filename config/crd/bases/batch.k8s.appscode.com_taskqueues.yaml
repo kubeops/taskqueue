@@ -39,13 +39,117 @@ spec:
           spec:
             description: TaskQueueSpec defines the desired state of TaskQueue.
             properties:
-              foo:
-                description: Foo is an example field of TaskQueue. Edit taskqueue_types.go
-                  to remove/update
-                type: string
+              lastTriggeredTasksHistory:
+                default: 20
+                description: |-
+                  LastTriggeredTasksHistory specifies how many history of triggeredTask will display in the status section.
+                  Defaults to 20 if not set.
+                type: integer
+              maxConcurrentTasks:
+                default: 20
+                description: |-
+                  MaxConcurrentTasks specifies the maximum number of tasks can run concurrently.
+                  Defaults to 20 if not set.
+                type: integer
+              tasks:
+                description: Tasks represents the lists of tasks that this queue is
+                  responsible for processing.
+                items:
+                  properties:
+                    rules:
+                      description: |-
+                        Rules defines ObjectPhaseRules. It contains three identification rules of successful phase of the object,
+                        progressing phase of the object & failed phase of the object.
+                        Example:
+                        rules:
+                          success:    `has(self.status.phase) && self.status.phase == 'Successful'`
+                          inProgress: `has(self.status.phase) && self.status.phase == 'Progressing'`
+                          failed:     `has(self.status.phase) && self.status.phase == 'Failed'`
+                      properties:
+                        failed:
+                          description: |-
+                            Failed defines a rule to identify that applied operation is failed.
+                            Example:
+                              inProgress: `has(self.status.phase) && self.status.phase == 'Failed'`
+                            Here self.status.phase is pointing to .status.phase field of the Operation object.
+                            When .status.phase field presents and becomes `Failed`, the Failed rule will satisfy.
+                          type: string
+                        inProgress:
+                          description: |-
+                            InProgress defines a rule to identify that applied operation is progressing.
+                            Example:
+                              inProgress: `has(self.status.phase) && self.status.phase == 'Progressing'`
+                            Here self.status.phase is pointing to .status.phase field of the Operation object.
+                            When .status.phase field presents and becomes `Progressing`, the InProgress rule will satisfy.
+                          type: string
+                        success:
+                          description: |-
+                            Success defines a rule to identify the successful execution of the operation.
+                            Example:
+                              success: `has(self.status.phase) && self.status.phase == 'Successful'`
+                            Here self.status.phase is pointing to .status.phase field of the Operation object.
+                            When .status.phase field presents and becomes `Successful`, the Success rule will satisfy.
+                          type: string
+                      required:
+                      - failed
+                      - inProgress
+                      - success
+                      type: object
+                    type:
+                      properties:
+                        apiGroup:
+                          type: string
+                        kind:
+                          type: string
+                      type: object
+                  required:
+                  - rules
+                  type: object
+                type: array
             type: object
           status:
             description: TaskQueueStatus defines the observed state of TaskQueue.
+            properties:
+              lastExecutionTime:
+                description: LastExecutionTime indicates when the last task was executed.
+                format: date-time
+                type: string
+              lastTriggeredTasks:
+                description: LastTriggeredTasks contains references to the most recently
+                  triggered tasks.
+                items:
+                  description: TypedObjectReference contains enough information to
+                    let you locate the typed referenced object
+                  properties:
+                    apiGroup:
+                      description: |-
+                        APIGroup is the group for the resource being referenced.
+                        If APIGroup is not specified, the specified Kind must be in the core API group.
+                        For any other third-party types, APIGroup is required.
+                      type: string
+                    kind:
+                      description: Kind is the type of resource being referenced
+                      type: string
+                    name:
+                      description: Name is the name of resource being referenced
+                      type: string
+                    namespace:
+                      description: |-
+                        Namespace is the namespace of resource being referenced
+                        Note that when a namespace is specified, a gateway.networking.k8s.io/ReferenceGrant object is required in the referent namespace to allow that namespace's owner to accept the reference. See the ReferenceGrant documentation for details.
+                        (Alpha) This field requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
+                      type: string
+                  required:
+                  - kind
+                  - name
+                  type: object
+                type: array
+              triggeredTasksPhase:
+                additionalProperties:
+                  type: string
+                description: TriggeredTasksPhase contains the status of the triggered
+                  tasks.
+                type: object
             type: object
         type: object
     served: true
