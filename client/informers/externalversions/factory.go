@@ -23,11 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "go.virtual-secrets.dev/apimachinery/client/clientset/versioned"
-	config "go.virtual-secrets.dev/apimachinery/client/informers/externalversions/config"
-	internalinterfaces "go.virtual-secrets.dev/apimachinery/client/informers/externalversions/internalinterfaces"
-	virtual "go.virtual-secrets.dev/apimachinery/client/informers/externalversions/virtual"
-
+	versioned "go.virtual-secrets.dev/taskqueue/client/clientset/versioned"
+	internalinterfaces "go.virtual-secrets.dev/taskqueue/client/informers/externalversions/internalinterfaces"
+	ops "go.virtual-secrets.dev/taskqueue/client/informers/externalversions/ops"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -255,14 +253,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Config() config.Interface
-	VirtualSecrets() virtual.Interface
+	Ops() ops.Interface
 }
 
-func (f *sharedInformerFactory) Config() config.Interface {
-	return config.New(f, f.namespace, f.tweakListOptions)
-}
-
-func (f *sharedInformerFactory) VirtualSecrets() virtual.Interface {
-	return virtual.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Ops() ops.Interface {
+	return ops.New(f, f.namespace, f.tweakListOptions)
 }

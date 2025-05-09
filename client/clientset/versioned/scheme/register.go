@@ -19,9 +19,7 @@ limitations under the License.
 package scheme
 
 import (
-	configv1alpha1 "go.virtual-secrets.dev/apimachinery/apis/config/v1alpha1"
-	virtualsecretsv1alpha1 "go.virtual-secrets.dev/apimachinery/apis/virtual/v1alpha1"
-
+	opsv1alpha1 "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -33,8 +31,7 @@ var Scheme = runtime.NewScheme()
 var Codecs = serializer.NewCodecFactory(Scheme)
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
-	configv1alpha1.AddToScheme,
-	virtualsecretsv1alpha1.AddToScheme,
+	opsv1alpha1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

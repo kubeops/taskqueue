@@ -44,7 +44,7 @@
         }
       }
     },
-    "/apis/config.virtual-secrets.dev/": {
+    "/apis/ops.k8s.appscode.com/": {
       "get": {
         "description": "get information of a group",
         "consumes": [
@@ -61,9 +61,9 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev"
+          "opsK8sAppscodeCom"
         ],
-        "operationId": "getConfigVirtualSecretsDevAPIGroup",
+        "operationId": "getOpsK8sAppscodeComAPIGroup",
         "responses": {
           "200": {
             "description": "OK",
@@ -74,7 +74,7 @@
         }
       }
     },
-    "/apis/config.virtual-secrets.dev/v1alpha1/": {
+    "/apis/ops.k8s.appscode.com/v1alpha1/": {
       "get": {
         "description": "get available resources",
         "consumes": [
@@ -91,9 +91,9 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "getConfigVirtualSecretsDevV1alpha1APIResources",
+        "operationId": "getOpsK8sAppscodeComV1alpha1APIResources",
         "responses": {
           "200": {
             "description": "OK",
@@ -104,9 +104,9 @@
         }
       }
     },
-    "/apis/config.virtual-secrets.dev/v1alpha1/namespaces/{namespace}/secretmetadatas": {
+    "/apis/ops.k8s.appscode.com/v1alpha1/pendingtasks": {
       "get": {
-        "description": "list or watch objects of kind SecretMetadata",
+        "description": "list or watch objects of kind PendingTask",
         "consumes": [
           "*/*"
         ],
@@ -121,9 +121,9 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "listConfigVirtualSecretsDevV1alpha1NamespacedSecretMetadata",
+        "operationId": "listOpsK8sAppscodeComV1alpha1PendingTask",
         "parameters": [
           {
             "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
@@ -160,19 +160,19 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadataList"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskList"
             }
           }
         },
         "x-kubernetes-action": "list",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "post": {
-        "description": "create a SecretMetadata",
+        "description": "create a PendingTask",
         "consumes": [
           "*/*"
         ],
@@ -185,16 +185,16 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "createConfigVirtualSecretsDevV1alpha1NamespacedSecretMetadata",
+        "operationId": "createOpsK8sAppscodeComV1alpha1PendingTask",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           {
@@ -219,31 +219,31 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           "202": {
             "description": "Accepted",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           }
         },
         "x-kubernetes-action": "post",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "delete": {
-        "description": "delete collection of SecretMetadata",
+        "description": "delete collection of PendingTask",
         "consumes": [
           "*/*"
         ],
@@ -256,9 +256,9 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "deleteConfigVirtualSecretsDevV1alpha1CollectionNamespacedSecretMetadata",
+        "operationId": "deleteOpsK8sAppscodeComV1alpha1CollectionPendingTask",
         "parameters": [
           {
             "$ref": "#/parameters/body-2Y1dVQaQ"
@@ -317,23 +317,20 @@
         },
         "x-kubernetes-action": "deletecollection",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "parameters": [
-        {
-          "$ref": "#/parameters/namespace-vgWSWtn3"
-        },
         {
           "$ref": "#/parameters/pretty-tJGM1-ng"
         }
       ]
     },
-    "/apis/config.virtual-secrets.dev/v1alpha1/namespaces/{namespace}/secretmetadatas/{name}": {
+    "/apis/ops.k8s.appscode.com/v1alpha1/pendingtasks/{name}": {
       "get": {
-        "description": "read the specified SecretMetadata",
+        "description": "read the specified PendingTask",
         "consumes": [
           "*/*"
         ],
@@ -346,26 +343,26 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "readConfigVirtualSecretsDevV1alpha1NamespacedSecretMetadata",
+        "operationId": "readOpsK8sAppscodeComV1alpha1PendingTask",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           }
         },
         "x-kubernetes-action": "get",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "put": {
-        "description": "replace the specified SecretMetadata",
+        "description": "replace the specified PendingTask",
         "consumes": [
           "*/*"
         ],
@@ -378,16 +375,16 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "replaceConfigVirtualSecretsDevV1alpha1NamespacedSecretMetadata",
+        "operationId": "replaceOpsK8sAppscodeComV1alpha1PendingTask",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           {
@@ -412,25 +409,25 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           }
         },
         "x-kubernetes-action": "put",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "delete": {
-        "description": "delete a SecretMetadata",
+        "description": "delete a PendingTask",
         "consumes": [
           "*/*"
         ],
@@ -443,9 +440,9 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "deleteConfigVirtualSecretsDevV1alpha1NamespacedSecretMetadata",
+        "operationId": "deleteOpsK8sAppscodeComV1alpha1PendingTask",
         "parameters": [
           {
             "$ref": "#/parameters/body-2Y1dVQaQ"
@@ -486,13 +483,13 @@
         },
         "x-kubernetes-action": "delete",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "patch": {
-        "description": "partially update the specified SecretMetadata",
+        "description": "partially update the specified PendingTask",
         "consumes": [
           "application/json-patch+json",
           "application/merge-patch+json",
@@ -508,9 +505,9 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "patchConfigVirtualSecretsDevV1alpha1NamespacedSecretMetadata",
+        "operationId": "patchOpsK8sAppscodeComV1alpha1PendingTask",
         "parameters": [
           {
             "$ref": "#/parameters/body-78PwaGsr"
@@ -540,566 +537,28 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
+              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           }
         },
         "x-kubernetes-action": "patch",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "parameters": [
         {
           "uniqueItems": true,
           "type": "string",
-          "description": "name of the SecretMetadata",
-          "name": "name",
-          "in": "path",
-          "required": true
-        },
-        {
-          "$ref": "#/parameters/namespace-vgWSWtn3"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        }
-      ]
-    },
-    "/apis/config.virtual-secrets.dev/v1alpha1/secretmetadatas": {
-      "get": {
-        "description": "list or watch objects of kind SecretMetadata",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "listConfigVirtualSecretsDevV1alpha1SecretMetadataForAllNamespaces",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadataList"
-            }
-          }
-        },
-        "x-kubernetes-action": "list",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretMetadata"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-        },
-        {
-          "$ref": "#/parameters/continue-QfD61s0i"
-        },
-        {
-          "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-        },
-        {
-          "$ref": "#/parameters/labelSelector-5Zw57w4C"
-        },
-        {
-          "$ref": "#/parameters/limit-1NfNmdNH"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        },
-        {
-          "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-        },
-        {
-          "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-        },
-        {
-          "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-        },
-        {
-          "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-        },
-        {
-          "$ref": "#/parameters/watch-XNNPZGbK"
-        }
-      ]
-    },
-    "/apis/config.virtual-secrets.dev/v1alpha1/secretstores": {
-      "get": {
-        "description": "list or watch objects of kind SecretStore",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "listConfigVirtualSecretsDevV1alpha1SecretStore",
-        "parameters": [
-          {
-            "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-          },
-          {
-            "$ref": "#/parameters/continue-QfD61s0i"
-          },
-          {
-            "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-          },
-          {
-            "$ref": "#/parameters/labelSelector-5Zw57w4C"
-          },
-          {
-            "$ref": "#/parameters/limit-1NfNmdNH"
-          },
-          {
-            "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-          },
-          {
-            "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-          },
-          {
-            "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-          },
-          {
-            "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-          },
-          {
-            "$ref": "#/parameters/watch-XNNPZGbK"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStoreList"
-            }
-          }
-        },
-        "x-kubernetes-action": "list",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "post": {
-        "description": "create a SecretStore",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "createConfigVirtualSecretsDevV1alpha1SecretStore",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/fieldManager-Qy4HdaTW"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "fieldValidation instructs the server on how to handle objects in the request (POST/PUT/PATCH) containing unknown or duplicate fields. Valid values are: - Ignore: This will ignore any unknown fields that are silently dropped from the object, and will ignore all but the last duplicate field that the decoder encounters. This is the default behavior prior to v1.23. - Warn: This will send a warning via the standard warning response header for each unknown field that is dropped from the object, and for each duplicate field that is encountered. The request will still succeed if there are no other errors, and will only persist the last of any duplicate fields. This is the default in v1.23+ - Strict: This will fail the request with a BadRequest error if any unknown fields would be dropped from the object, or if any duplicate fields are present. The error returned from the server will contain all unknown and duplicate fields encountered.",
-            "name": "fieldValidation",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          },
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          },
-          "202": {
-            "description": "Accepted",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          }
-        },
-        "x-kubernetes-action": "post",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "delete": {
-        "description": "delete collection of SecretStore",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "deleteConfigVirtualSecretsDevV1alpha1CollectionSecretStore",
-        "parameters": [
-          {
-            "$ref": "#/parameters/body-2Y1dVQaQ"
-          },
-          {
-            "$ref": "#/parameters/continue-QfD61s0i"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-          },
-          {
-            "$ref": "#/parameters/gracePeriodSeconds--K5HaBOS"
-          },
-          {
-            "$ref": "#/parameters/ignoreStoreReadErrorWithClusterBreakingPotential-QbNkfIqj"
-          },
-          {
-            "$ref": "#/parameters/labelSelector-5Zw57w4C"
-          },
-          {
-            "$ref": "#/parameters/limit-1NfNmdNH"
-          },
-          {
-            "$ref": "#/parameters/orphanDependents-uRB25kX5"
-          },
-          {
-            "$ref": "#/parameters/propagationPolicy-6jk3prlO"
-          },
-          {
-            "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-          },
-          {
-            "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-          },
-          {
-            "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-          },
-          {
-            "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Status"
-            }
-          }
-        },
-        "x-kubernetes-action": "deletecollection",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        }
-      ]
-    },
-    "/apis/config.virtual-secrets.dev/v1alpha1/secretstores/{name}": {
-      "get": {
-        "description": "read the specified SecretStore",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "readConfigVirtualSecretsDevV1alpha1SecretStore",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          }
-        },
-        "x-kubernetes-action": "get",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "put": {
-        "description": "replace the specified SecretStore",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "replaceConfigVirtualSecretsDevV1alpha1SecretStore",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/fieldManager-Qy4HdaTW"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "fieldValidation instructs the server on how to handle objects in the request (POST/PUT/PATCH) containing unknown or duplicate fields. Valid values are: - Ignore: This will ignore any unknown fields that are silently dropped from the object, and will ignore all but the last duplicate field that the decoder encounters. This is the default behavior prior to v1.23. - Warn: This will send a warning via the standard warning response header for each unknown field that is dropped from the object, and for each duplicate field that is encountered. The request will still succeed if there are no other errors, and will only persist the last of any duplicate fields. This is the default in v1.23+ - Strict: This will fail the request with a BadRequest error if any unknown fields would be dropped from the object, or if any duplicate fields are present. The error returned from the server will contain all unknown and duplicate fields encountered.",
-            "name": "fieldValidation",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          },
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          }
-        },
-        "x-kubernetes-action": "put",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "delete": {
-        "description": "delete a SecretStore",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "deleteConfigVirtualSecretsDevV1alpha1SecretStore",
-        "parameters": [
-          {
-            "$ref": "#/parameters/body-2Y1dVQaQ"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/gracePeriodSeconds--K5HaBOS"
-          },
-          {
-            "$ref": "#/parameters/ignoreStoreReadErrorWithClusterBreakingPotential-QbNkfIqj"
-          },
-          {
-            "$ref": "#/parameters/orphanDependents-uRB25kX5"
-          },
-          {
-            "$ref": "#/parameters/propagationPolicy-6jk3prlO"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Status"
-            }
-          },
-          "202": {
-            "description": "Accepted",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Status"
-            }
-          }
-        },
-        "x-kubernetes-action": "delete",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "patch": {
-        "description": "partially update the specified SecretStore",
-        "consumes": [
-          "application/json-patch+json",
-          "application/merge-patch+json",
-          "application/strategic-merge-patch+json",
-          "application/apply-patch+yaml"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "patchConfigVirtualSecretsDevV1alpha1SecretStore",
-        "parameters": [
-          {
-            "$ref": "#/parameters/body-78PwaGsr"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/fieldManager-7c6nTn1T"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "fieldValidation instructs the server on how to handle objects in the request (POST/PUT/PATCH) containing unknown or duplicate fields. Valid values are: - Ignore: This will ignore any unknown fields that are silently dropped from the object, and will ignore all but the last duplicate field that the decoder encounters. This is the default behavior prior to v1.23. - Warn: This will send a warning via the standard warning response header for each unknown field that is dropped from the object, and for each duplicate field that is encountered. The request will still succeed if there are no other errors, and will only persist the last of any duplicate fields. This is the default in v1.23+ - Strict: This will fail the request with a BadRequest error if any unknown fields would be dropped from the object, or if any duplicate fields are present. The error returned from the server will contain all unknown and duplicate fields encountered.",
-            "name": "fieldValidation",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/force-tOGGb0Yi"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          },
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-            }
-          }
-        },
-        "x-kubernetes-action": "patch",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "parameters": [
-        {
-          "uniqueItems": true,
-          "type": "string",
-          "description": "name of the SecretStore",
+          "description": "name of the PendingTask",
           "name": "name",
           "in": "path",
           "required": true
@@ -1109,9 +568,9 @@
         }
       ]
     },
-    "/apis/config.virtual-secrets.dev/v1alpha1/watch/namespaces/{namespace}/secretmetadatas": {
+    "/apis/ops.k8s.appscode.com/v1alpha1/watch/pendingtasks": {
       "get": {
-        "description": "watch individual changes to a list of SecretMetadata. deprecated: use the 'watch' parameter with a list operation instead.",
+        "description": "watch individual changes to a list of PendingTask. deprecated: use the 'watch' parameter with a list operation instead.",
         "consumes": [
           "*/*"
         ],
@@ -1126,9 +585,9 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "watchConfigVirtualSecretsDevV1alpha1NamespacedSecretMetadataList",
+        "operationId": "watchOpsK8sAppscodeComV1alpha1PendingTaskList",
         "responses": {
           "200": {
             "description": "OK",
@@ -1139,9 +598,9 @@
         },
         "x-kubernetes-action": "watchlist",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "parameters": [
@@ -1159,9 +618,6 @@
         },
         {
           "$ref": "#/parameters/limit-1NfNmdNH"
-        },
-        {
-          "$ref": "#/parameters/namespace-vgWSWtn3"
         },
         {
           "$ref": "#/parameters/pretty-tJGM1-ng"
@@ -1183,9 +639,9 @@
         }
       ]
     },
-    "/apis/config.virtual-secrets.dev/v1alpha1/watch/namespaces/{namespace}/secretmetadatas/{name}": {
+    "/apis/ops.k8s.appscode.com/v1alpha1/watch/pendingtasks/{name}": {
       "get": {
-        "description": "watch changes to an object of kind SecretMetadata. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.",
+        "description": "watch changes to an object of kind PendingTask. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.",
         "consumes": [
           "*/*"
         ],
@@ -1200,9 +656,9 @@
           "https"
         ],
         "tags": [
-          "configVirtualSecretsDev_v1alpha1"
+          "opsK8sAppscodeCom_v1alpha1"
         ],
-        "operationId": "watchConfigVirtualSecretsDevV1alpha1NamespacedSecretMetadata",
+        "operationId": "watchOpsK8sAppscodeComV1alpha1PendingTask",
         "responses": {
           "200": {
             "description": "OK",
@@ -1213,9 +669,9 @@
         },
         "x-kubernetes-action": "watch",
         "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "version": "v1alpha1",
-          "kind": "SecretMetadata"
+          "kind": "PendingTask"
         }
       },
       "parameters": [
@@ -1237,1062 +693,10 @@
         {
           "uniqueItems": true,
           "type": "string",
-          "description": "name of the SecretMetadata",
+          "description": "name of the PendingTask",
           "name": "name",
           "in": "path",
           "required": true
-        },
-        {
-          "$ref": "#/parameters/namespace-vgWSWtn3"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        },
-        {
-          "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-        },
-        {
-          "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-        },
-        {
-          "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-        },
-        {
-          "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-        },
-        {
-          "$ref": "#/parameters/watch-XNNPZGbK"
-        }
-      ]
-    },
-    "/apis/config.virtual-secrets.dev/v1alpha1/watch/secretmetadatas": {
-      "get": {
-        "description": "watch individual changes to a list of SecretMetadata. deprecated: use the 'watch' parameter with a list operation instead.",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "watchConfigVirtualSecretsDevV1alpha1SecretMetadataListForAllNamespaces",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.WatchEvent"
-            }
-          }
-        },
-        "x-kubernetes-action": "watchlist",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretMetadata"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-        },
-        {
-          "$ref": "#/parameters/continue-QfD61s0i"
-        },
-        {
-          "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-        },
-        {
-          "$ref": "#/parameters/labelSelector-5Zw57w4C"
-        },
-        {
-          "$ref": "#/parameters/limit-1NfNmdNH"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        },
-        {
-          "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-        },
-        {
-          "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-        },
-        {
-          "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-        },
-        {
-          "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-        },
-        {
-          "$ref": "#/parameters/watch-XNNPZGbK"
-        }
-      ]
-    },
-    "/apis/config.virtual-secrets.dev/v1alpha1/watch/secretstores": {
-      "get": {
-        "description": "watch individual changes to a list of SecretStore. deprecated: use the 'watch' parameter with a list operation instead.",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "watchConfigVirtualSecretsDevV1alpha1SecretStoreList",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.WatchEvent"
-            }
-          }
-        },
-        "x-kubernetes-action": "watchlist",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-        },
-        {
-          "$ref": "#/parameters/continue-QfD61s0i"
-        },
-        {
-          "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-        },
-        {
-          "$ref": "#/parameters/labelSelector-5Zw57w4C"
-        },
-        {
-          "$ref": "#/parameters/limit-1NfNmdNH"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        },
-        {
-          "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-        },
-        {
-          "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-        },
-        {
-          "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-        },
-        {
-          "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-        },
-        {
-          "$ref": "#/parameters/watch-XNNPZGbK"
-        }
-      ]
-    },
-    "/apis/config.virtual-secrets.dev/v1alpha1/watch/secretstores/{name}": {
-      "get": {
-        "description": "watch changes to an object of kind SecretStore. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "configVirtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "watchConfigVirtualSecretsDevV1alpha1SecretStore",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.WatchEvent"
-            }
-          }
-        },
-        "x-kubernetes-action": "watch",
-        "x-kubernetes-group-version-kind": {
-          "group": "config.virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "SecretStore"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-        },
-        {
-          "$ref": "#/parameters/continue-QfD61s0i"
-        },
-        {
-          "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-        },
-        {
-          "$ref": "#/parameters/labelSelector-5Zw57w4C"
-        },
-        {
-          "$ref": "#/parameters/limit-1NfNmdNH"
-        },
-        {
-          "uniqueItems": true,
-          "type": "string",
-          "description": "name of the SecretStore",
-          "name": "name",
-          "in": "path",
-          "required": true
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        },
-        {
-          "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-        },
-        {
-          "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-        },
-        {
-          "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-        },
-        {
-          "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-        },
-        {
-          "$ref": "#/parameters/watch-XNNPZGbK"
-        }
-      ]
-    },
-    "/apis/virtual-secrets.dev/": {
-      "get": {
-        "description": "get information of a group",
-        "consumes": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev"
-        ],
-        "operationId": "getVirtualSecretsDevAPIGroup",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.APIGroup"
-            }
-          }
-        }
-      }
-    },
-    "/apis/virtual-secrets.dev/v1alpha1/": {
-      "get": {
-        "description": "get available resources",
-        "consumes": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "getVirtualSecretsDevV1alpha1APIResources",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.APIResourceList"
-            }
-          }
-        }
-      }
-    },
-    "/apis/virtual-secrets.dev/v1alpha1/namespaces/{namespace}/secrets": {
-      "get": {
-        "description": "list or watch objects of kind Secret",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "listVirtualSecretsDevV1alpha1NamespacedSecret",
-        "parameters": [
-          {
-            "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-          },
-          {
-            "$ref": "#/parameters/continue-QfD61s0i"
-          },
-          {
-            "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-          },
-          {
-            "$ref": "#/parameters/labelSelector-5Zw57w4C"
-          },
-          {
-            "$ref": "#/parameters/limit-1NfNmdNH"
-          },
-          {
-            "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-          },
-          {
-            "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-          },
-          {
-            "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-          },
-          {
-            "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-          },
-          {
-            "$ref": "#/parameters/watch-XNNPZGbK"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.SecretList"
-            }
-          }
-        },
-        "x-kubernetes-action": "list",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "post": {
-        "description": "create a Secret",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "createVirtualSecretsDevV1alpha1NamespacedSecret",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/fieldManager-Qy4HdaTW"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "fieldValidation instructs the server on how to handle objects in the request (POST/PUT/PATCH) containing unknown or duplicate fields. Valid values are: - Ignore: This will ignore any unknown fields that are silently dropped from the object, and will ignore all but the last duplicate field that the decoder encounters. This is the default behavior prior to v1.23. - Warn: This will send a warning via the standard warning response header for each unknown field that is dropped from the object, and for each duplicate field that is encountered. The request will still succeed if there are no other errors, and will only persist the last of any duplicate fields. This is the default in v1.23+ - Strict: This will fail the request with a BadRequest error if any unknown fields would be dropped from the object, or if any duplicate fields are present. The error returned from the server will contain all unknown and duplicate fields encountered.",
-            "name": "fieldValidation",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          },
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          },
-          "202": {
-            "description": "Accepted",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          }
-        },
-        "x-kubernetes-action": "post",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "delete": {
-        "description": "delete collection of Secret",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "deleteVirtualSecretsDevV1alpha1CollectionNamespacedSecret",
-        "parameters": [
-          {
-            "$ref": "#/parameters/body-2Y1dVQaQ"
-          },
-          {
-            "$ref": "#/parameters/continue-QfD61s0i"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-          },
-          {
-            "$ref": "#/parameters/gracePeriodSeconds--K5HaBOS"
-          },
-          {
-            "$ref": "#/parameters/ignoreStoreReadErrorWithClusterBreakingPotential-QbNkfIqj"
-          },
-          {
-            "$ref": "#/parameters/labelSelector-5Zw57w4C"
-          },
-          {
-            "$ref": "#/parameters/limit-1NfNmdNH"
-          },
-          {
-            "$ref": "#/parameters/orphanDependents-uRB25kX5"
-          },
-          {
-            "$ref": "#/parameters/propagationPolicy-6jk3prlO"
-          },
-          {
-            "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-          },
-          {
-            "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-          },
-          {
-            "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-          },
-          {
-            "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Status"
-            }
-          }
-        },
-        "x-kubernetes-action": "deletecollection",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/namespace-vgWSWtn3"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        }
-      ]
-    },
-    "/apis/virtual-secrets.dev/v1alpha1/namespaces/{namespace}/secrets/{name}": {
-      "get": {
-        "description": "read the specified Secret",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "readVirtualSecretsDevV1alpha1NamespacedSecret",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          }
-        },
-        "x-kubernetes-action": "get",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "put": {
-        "description": "replace the specified Secret",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "replaceVirtualSecretsDevV1alpha1NamespacedSecret",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/fieldManager-Qy4HdaTW"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "fieldValidation instructs the server on how to handle objects in the request (POST/PUT/PATCH) containing unknown or duplicate fields. Valid values are: - Ignore: This will ignore any unknown fields that are silently dropped from the object, and will ignore all but the last duplicate field that the decoder encounters. This is the default behavior prior to v1.23. - Warn: This will send a warning via the standard warning response header for each unknown field that is dropped from the object, and for each duplicate field that is encountered. The request will still succeed if there are no other errors, and will only persist the last of any duplicate fields. This is the default in v1.23+ - Strict: This will fail the request with a BadRequest error if any unknown fields would be dropped from the object, or if any duplicate fields are present. The error returned from the server will contain all unknown and duplicate fields encountered.",
-            "name": "fieldValidation",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          },
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          }
-        },
-        "x-kubernetes-action": "put",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "delete": {
-        "description": "delete a Secret",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "deleteVirtualSecretsDevV1alpha1NamespacedSecret",
-        "parameters": [
-          {
-            "$ref": "#/parameters/body-2Y1dVQaQ"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/gracePeriodSeconds--K5HaBOS"
-          },
-          {
-            "$ref": "#/parameters/ignoreStoreReadErrorWithClusterBreakingPotential-QbNkfIqj"
-          },
-          {
-            "$ref": "#/parameters/orphanDependents-uRB25kX5"
-          },
-          {
-            "$ref": "#/parameters/propagationPolicy-6jk3prlO"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Status"
-            }
-          },
-          "202": {
-            "description": "Accepted",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Status"
-            }
-          }
-        },
-        "x-kubernetes-action": "delete",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "patch": {
-        "description": "partially update the specified Secret",
-        "consumes": [
-          "application/json-patch+json",
-          "application/merge-patch+json",
-          "application/strategic-merge-patch+json",
-          "application/apply-patch+yaml"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "patchVirtualSecretsDevV1alpha1NamespacedSecret",
-        "parameters": [
-          {
-            "$ref": "#/parameters/body-78PwaGsr"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed",
-            "name": "dryRun",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/fieldManager-7c6nTn1T"
-          },
-          {
-            "uniqueItems": true,
-            "type": "string",
-            "description": "fieldValidation instructs the server on how to handle objects in the request (POST/PUT/PATCH) containing unknown or duplicate fields. Valid values are: - Ignore: This will ignore any unknown fields that are silently dropped from the object, and will ignore all but the last duplicate field that the decoder encounters. This is the default behavior prior to v1.23. - Warn: This will send a warning via the standard warning response header for each unknown field that is dropped from the object, and for each duplicate field that is encountered. The request will still succeed if there are no other errors, and will only persist the last of any duplicate fields. This is the default in v1.23+ - Strict: This will fail the request with a BadRequest error if any unknown fields would be dropped from the object, or if any duplicate fields are present. The error returned from the server will contain all unknown and duplicate fields encountered.",
-            "name": "fieldValidation",
-            "in": "query"
-          },
-          {
-            "$ref": "#/parameters/force-tOGGb0Yi"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          },
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
-            }
-          }
-        },
-        "x-kubernetes-action": "patch",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "parameters": [
-        {
-          "uniqueItems": true,
-          "type": "string",
-          "description": "name of the Secret",
-          "name": "name",
-          "in": "path",
-          "required": true
-        },
-        {
-          "$ref": "#/parameters/namespace-vgWSWtn3"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        }
-      ]
-    },
-    "/apis/virtual-secrets.dev/v1alpha1/secrets": {
-      "get": {
-        "description": "list or watch objects of kind Secret",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "listVirtualSecretsDevV1alpha1SecretForAllNamespaces",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.SecretList"
-            }
-          }
-        },
-        "x-kubernetes-action": "list",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-        },
-        {
-          "$ref": "#/parameters/continue-QfD61s0i"
-        },
-        {
-          "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-        },
-        {
-          "$ref": "#/parameters/labelSelector-5Zw57w4C"
-        },
-        {
-          "$ref": "#/parameters/limit-1NfNmdNH"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        },
-        {
-          "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-        },
-        {
-          "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-        },
-        {
-          "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-        },
-        {
-          "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-        },
-        {
-          "$ref": "#/parameters/watch-XNNPZGbK"
-        }
-      ]
-    },
-    "/apis/virtual-secrets.dev/v1alpha1/watch/namespaces/{namespace}/secrets": {
-      "get": {
-        "description": "watch individual changes to a list of Secret. deprecated: use the 'watch' parameter with a list operation instead.",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "watchVirtualSecretsDevV1alpha1NamespacedSecretList",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.WatchEvent"
-            }
-          }
-        },
-        "x-kubernetes-action": "watchlist",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-        },
-        {
-          "$ref": "#/parameters/continue-QfD61s0i"
-        },
-        {
-          "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-        },
-        {
-          "$ref": "#/parameters/labelSelector-5Zw57w4C"
-        },
-        {
-          "$ref": "#/parameters/limit-1NfNmdNH"
-        },
-        {
-          "$ref": "#/parameters/namespace-vgWSWtn3"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        },
-        {
-          "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-        },
-        {
-          "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-        },
-        {
-          "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-        },
-        {
-          "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-        },
-        {
-          "$ref": "#/parameters/watch-XNNPZGbK"
-        }
-      ]
-    },
-    "/apis/virtual-secrets.dev/v1alpha1/watch/namespaces/{namespace}/secrets/{name}": {
-      "get": {
-        "description": "watch changes to an object of kind Secret. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "watchVirtualSecretsDevV1alpha1NamespacedSecret",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.WatchEvent"
-            }
-          }
-        },
-        "x-kubernetes-action": "watch",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-        },
-        {
-          "$ref": "#/parameters/continue-QfD61s0i"
-        },
-        {
-          "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-        },
-        {
-          "$ref": "#/parameters/labelSelector-5Zw57w4C"
-        },
-        {
-          "$ref": "#/parameters/limit-1NfNmdNH"
-        },
-        {
-          "uniqueItems": true,
-          "type": "string",
-          "description": "name of the Secret",
-          "name": "name",
-          "in": "path",
-          "required": true
-        },
-        {
-          "$ref": "#/parameters/namespace-vgWSWtn3"
-        },
-        {
-          "$ref": "#/parameters/pretty-tJGM1-ng"
-        },
-        {
-          "$ref": "#/parameters/resourceVersion-5WAnf1kx"
-        },
-        {
-          "$ref": "#/parameters/resourceVersionMatch-t8XhRHeC"
-        },
-        {
-          "$ref": "#/parameters/sendInitialEvents-rLXlEK_k"
-        },
-        {
-          "$ref": "#/parameters/timeoutSeconds-yvYezaOC"
-        },
-        {
-          "$ref": "#/parameters/watch-XNNPZGbK"
-        }
-      ]
-    },
-    "/apis/virtual-secrets.dev/v1alpha1/watch/secrets": {
-      "get": {
-        "description": "watch individual changes to a list of Secret. deprecated: use the 'watch' parameter with a list operation instead.",
-        "consumes": [
-          "*/*"
-        ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "application/vnd.kubernetes.protobuf",
-          "application/json;stream=watch",
-          "application/vnd.kubernetes.protobuf;stream=watch"
-        ],
-        "schemes": [
-          "https"
-        ],
-        "tags": [
-          "virtualSecretsDev_v1alpha1"
-        ],
-        "operationId": "watchVirtualSecretsDevV1alpha1SecretListForAllNamespaces",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.WatchEvent"
-            }
-          }
-        },
-        "x-kubernetes-action": "watchlist",
-        "x-kubernetes-group-version-kind": {
-          "group": "virtual-secrets.dev",
-          "version": "v1alpha1",
-          "kind": "Secret"
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/allowWatchBookmarks-HC2hJt-J"
-        },
-        {
-          "$ref": "#/parameters/continue-QfD61s0i"
-        },
-        {
-          "$ref": "#/parameters/fieldSelector-xIcQKXFG"
-        },
-        {
-          "$ref": "#/parameters/labelSelector-5Zw57w4C"
-        },
-        {
-          "$ref": "#/parameters/limit-1NfNmdNH"
         },
         {
           "$ref": "#/parameters/pretty-tJGM1-ng"
@@ -2342,7 +746,7 @@
     }
   },
   "definitions": {
-    "dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata": {
+    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask": {
       "type": "object",
       "properties": {
         "apiVersion": {
@@ -2359,228 +763,27 @@
         },
         "spec": {
           "default": {},
-          "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadataSpec"
+          "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskSpec"
+        },
+        "status": {
+          "default": {},
+          "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskStatus"
         }
       },
       "x-kubernetes-group-version-kind": [
         {
-          "group": "config.virtual-secrets.dev",
-          "kind": "SecretMetadata",
-          "version": "v1alpha1"
-        }
-      ]
-    },
-    "dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadataList": {
-      "description": "SecretMetadataList contains a list of SecretMetadata",
-      "type": "object",
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "apiVersion": {
-          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-          "type": "string"
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "default": {},
-            "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadata"
-          }
-        },
-        "kind": {
-          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-          "type": "string"
-        },
-        "metadata": {
-          "default": {},
-          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ListMeta"
-        }
-      },
-      "x-kubernetes-group-version-kind": [
-        {
-          "group": "config.virtual-secrets.dev",
-          "kind": "SecretMetadataList",
-          "version": "v1alpha1"
-        }
-      ]
-    },
-    "dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretMetadataSpec": {
-      "description": "SecretMetadataSpec defines the desired state of SecretMetadata",
-      "type": "object",
-      "required": [
-        "secretStoreName"
-      ],
-      "properties": {
-        "immutable": {
-          "description": "Immutable, if set to true, ensures that data stored in the Secret cannot be updated (only object metadata can be modified). If not set to true, the field can be modified at any time. Defaulted to nil.",
-          "type": "boolean"
-        },
-        "secretStoreName": {
-          "description": "Name of the SecretStoreName object",
-          "type": "string",
-          "default": ""
-        },
-        "type": {
-          "description": "Used to facilitate programmatic handling of secret data. More meta: https://kubernetes.io/docs/concepts/configuration/secret/#secret-types",
-          "type": "string"
-        }
-      }
-    },
-    "dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore": {
-      "type": "object",
-      "properties": {
-        "apiVersion": {
-          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-          "type": "string"
-        },
-        "kind": {
-          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-          "type": "string"
-        },
-        "metadata": {
-          "default": {},
-          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta"
-        },
-        "spec": {
-          "default": {},
-          "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStoreSpec"
-        }
-      },
-      "x-kubernetes-group-version-kind": [
-        {
-          "group": "config.virtual-secrets.dev",
-          "kind": "SecretStore",
-          "version": "v1alpha1"
-        }
-      ]
-    },
-    "dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStoreList": {
-      "description": "SecretStoreList contains a list of SecretStore",
-      "type": "object",
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "apiVersion": {
-          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-          "type": "string"
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "default": {},
-            "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStore"
-          }
-        },
-        "kind": {
-          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-          "type": "string"
-        },
-        "metadata": {
-          "default": {},
-          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ListMeta"
-        }
-      },
-      "x-kubernetes-group-version-kind": [
-        {
-          "group": "config.virtual-secrets.dev",
-          "kind": "SecretStoreList",
-          "version": "v1alpha1"
-        }
-      ]
-    },
-    "dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.SecretStoreSpec": {
-      "description": "SecretStoreSpec defines the desired state of SecretStore",
-      "type": "object",
-      "properties": {
-        "vault": {
-          "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.Vault"
-        }
-      }
-    },
-    "dev.virtual-secrets.go.apimachinery.apis.config.v1alpha1.Vault": {
-      "type": "object",
-      "required": [
-        "url"
-      ],
-      "properties": {
-        "roleName": {
-          "description": "Name of the vault role to use for the operator",
-          "type": "string"
-        },
-        "url": {
-          "description": "Connection url to the secret manager",
-          "type": "string",
-          "default": ""
-        }
-      }
-    },
-    "dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret": {
-      "description": "Secret holds secret data of a certain type. The total bytes of the values in the Data field must be less than MaxSecretSize bytes.",
-      "type": "object",
-      "required": [
-        "secretStoreName"
-      ],
-      "properties": {
-        "apiVersion": {
-          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-          "type": "string"
-        },
-        "data": {
-          "description": "Data contains the secret data. Each key must consist of alphanumeric characters, '-', '_' or '.'. The serialized form of the secret data is a base64 encoded string, representing the arbitrary (possibly non-string) data value here. Described in https://tools.ietf.org/html/rfc4648#section-4",
-          "type": "object",
-          "additionalProperties": {
-            "type": "string",
-            "format": "byte"
-          }
-        },
-        "immutable": {
-          "description": "Immutable, if set to true, ensures that data stored in the Secret cannot be updated (only object metadata can be modified). If not set to true, the field can be modified at any time. Defaulted to nil.",
-          "type": "boolean"
-        },
-        "kind": {
-          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-          "type": "string"
-        },
-        "metadata": {
-          "description": "Standard object's metadata. More meta: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata",
-          "default": {},
-          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta"
-        },
-        "secretStoreName": {
-          "description": "Name of the SecretStoreName object",
-          "type": "string",
-          "default": ""
-        },
-        "stringData": {
-          "description": "stringData allows specifying non-binary secret data in string form. It is provided as a write-only input field for convenience. All keys and values are merged into the data field on write, overwriting any existing values. The stringData field is never output when reading from the API.",
-          "type": "object",
-          "additionalProperties": {
-            "type": "string",
-            "default": ""
-          }
-        },
-        "type": {
-          "description": "Used to facilitate programmatic handling of secret data. More meta: https://kubernetes.io/docs/concepts/configuration/secret/#secret-types",
-          "type": "string"
-        }
-      },
-      "x-kubernetes-group-version-kind": [
-        {
-          "group": "virtual-secrets.dev",
-          "kind": "Secret",
+          "group": "ops.k8s.appscode.com",
+          "kind": "PendingTask",
           "version": "__internal"
         },
         {
-          "group": "virtual-secrets.dev",
-          "kind": "Secret",
+          "group": "ops.k8s.appscode.com",
+          "kind": "PendingTask",
           "version": "v1alpha1"
         }
       ]
     },
-    "dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.SecretList": {
-      "description": "SecretList is a list of Secret.",
+    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskList": {
       "type": "object",
       "required": [
         "items"
@@ -2591,11 +794,10 @@
           "type": "string"
         },
         "items": {
-          "description": "Items is a list of secret objects. More meta: https://kubernetes.io/docs/concepts/configuration/secret",
           "type": "array",
           "items": {
             "default": {},
-            "$ref": "#/definitions/dev.virtual-secrets.go.apimachinery.apis.virtual.v1alpha1.Secret"
+            "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
           }
         },
         "kind": {
@@ -2603,23 +805,51 @@
           "type": "string"
         },
         "metadata": {
-          "description": "Standard list metadata. More meta: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
           "default": {},
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ListMeta"
         }
       },
       "x-kubernetes-group-version-kind": [
         {
-          "group": "virtual-secrets.dev",
-          "kind": "SecretList",
-          "version": "__internal"
-        },
-        {
-          "group": "virtual-secrets.dev",
-          "kind": "SecretList",
+          "group": "ops.k8s.appscode.com",
+          "kind": "PendingTaskList",
           "version": "v1alpha1"
         }
       ]
+    },
+    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskSpec": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "description": "Resource contains the raw YAML/JSON representation of the Kubernetes resource to be triggered by the task queue.",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.runtime.RawExtension"
+        },
+        "task": {
+          "description": "Task identifies the resource type that the taskQueue is responsible for triggering.",
+          "default": {},
+          "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.UnitTask"
+        }
+      }
+    },
+    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskStatus": {
+      "type": "object",
+      "properties": {
+        "taskQueueName": {
+          "description": "TaskQueueName is the name of the taskQueue that is responsible for triggering this task.",
+          "type": "string"
+        }
+      }
+    },
+    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.UnitTask": {
+      "type": "object",
+      "properties": {
+        "apiGroup": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        }
+      }
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.APIGroup": {
       "description": "APIGroup contains the name, the supported versions, and the preferred version of a group.",
@@ -2867,12 +1097,7 @@
           "version": "v1"
         },
         {
-          "group": "config.virtual-secrets.dev",
-          "kind": "DeleteOptions",
-          "version": "v1alpha1"
-        },
-        {
-          "group": "virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "kind": "DeleteOptions",
           "version": "v1alpha1"
         }
@@ -3266,12 +1491,7 @@
           "version": "v1"
         },
         {
-          "group": "config.virtual-secrets.dev",
-          "kind": "WatchEvent",
-          "version": "v1alpha1"
-        },
-        {
-          "group": "virtual-secrets.dev",
+          "group": "ops.k8s.appscode.com",
           "kind": "WatchEvent",
           "version": "v1alpha1"
         }
@@ -3420,14 +1640,6 @@
       "description": "limit is a maximum number of responses to return for a list call. If more items exist, the server will set the `continue` field on the list metadata to a value that can be used with the same initial query to retrieve the next set of results. Setting a limit may return fewer than the requested amount of items (up to zero items) in the event all requested objects are filtered out and clients should only use the presence of the continue field to determine whether more results are available. Servers may choose not to support the limit argument and will return all of the available results. If limit is specified and the continue field is empty, clients may assume that no more results are available. This field is not supported if watch is true.\n\nThe server guarantees that the objects returned when using continue will be identical to issuing a single list call without a limit - that is, no objects created, modified, or deleted after the first request is issued will be included in any subsequent continued requests. This is sometimes referred to as a consistent snapshot, and ensures that a client that is using limit to receive smaller chunks of a very large result can ensure they see all possible objects. If objects are updated during a chunked list the version of the object that was present at the time the first list result was calculated is returned.",
       "name": "limit",
       "in": "query"
-    },
-    "namespace-vgWSWtn3": {
-      "uniqueItems": true,
-      "type": "string",
-      "description": "object name and auth scope, such as for teams and projects",
-      "name": "namespace",
-      "in": "path",
-      "required": true
     },
     "orphanDependents-uRB25kX5": {
       "uniqueItems": true,

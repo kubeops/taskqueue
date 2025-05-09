@@ -19,12 +19,9 @@ limitations under the License.
 package fake
 
 import (
-	clientset "go.virtual-secrets.dev/apimachinery/client/clientset/versioned"
-	configv1alpha1 "go.virtual-secrets.dev/apimachinery/client/clientset/versioned/typed/config/v1alpha1"
-	fakeconfigv1alpha1 "go.virtual-secrets.dev/apimachinery/client/clientset/versioned/typed/config/v1alpha1/fake"
-	virtualsecretsv1alpha1 "go.virtual-secrets.dev/apimachinery/client/clientset/versioned/typed/virtual/v1alpha1"
-	fakevirtualsecretsv1alpha1 "go.virtual-secrets.dev/apimachinery/client/clientset/versioned/typed/virtual/v1alpha1/fake"
-
+	clientset "go.virtual-secrets.dev/taskqueue/client/clientset/versioned"
+	opsv1alpha1 "go.virtual-secrets.dev/taskqueue/client/clientset/versioned/typed/ops/v1alpha1"
+	fakeopsv1alpha1 "go.virtual-secrets.dev/taskqueue/client/clientset/versioned/typed/ops/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -82,12 +79,7 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// ConfigV1alpha1 retrieves the ConfigV1alpha1Client
-func (c *Clientset) ConfigV1alpha1() configv1alpha1.ConfigV1alpha1Interface {
-	return &fakeconfigv1alpha1.FakeConfigV1alpha1{Fake: &c.Fake}
-}
-
-// VirtualSecretsV1alpha1 retrieves the VirtualSecretsV1alpha1Client
-func (c *Clientset) VirtualSecretsV1alpha1() virtualsecretsv1alpha1.VirtualSecretsV1alpha1Interface {
-	return &fakevirtualsecretsv1alpha1.FakeVirtualSecretsV1alpha1{Fake: &c.Fake}
+// OpsV1alpha1 retrieves the OpsV1alpha1Client
+func (c *Clientset) OpsV1alpha1() opsv1alpha1.OpsV1alpha1Interface {
+	return &fakeopsv1alpha1.FakeOpsV1alpha1{Fake: &c.Fake}
 }

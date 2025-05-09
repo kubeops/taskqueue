@@ -21,8 +21,7 @@ package internalinterfaces
 import (
 	time "time"
 
-	versioned "go.virtual-secrets.dev/apimachinery/client/clientset/versioned"
-
+	versioned "go.virtual-secrets.dev/taskqueue/client/clientset/versioned"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	cache "k8s.io/client-go/tools/cache"

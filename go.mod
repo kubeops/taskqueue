@@ -1,4 +1,4 @@
-module go.virtual-secrets.dev/apimachinery
+module go.virtual-secrets.dev/taskqueue
 
 go 1.23.0
 
@@ -11,7 +11,6 @@ require (
 	k8s.io/api v0.32.3
 	k8s.io/apiextensions-apiserver v0.32.3
 	k8s.io/apimachinery v0.32.3
-	k8s.io/client-go v0.32.3
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20250318172550-b98be4ee1595
 	kmodules.xyz/client-go v0.32.0
@@ -127,6 +126,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiserver v0.32.3 // indirect
+	k8s.io/client-go v0.32.3 // indirect
 	k8s.io/component-base v0.32.3 // indirect
 	k8s.io/kms v0.32.3 // indirect
 	k8s.io/kube-aggregator v0.32.2 // indirect

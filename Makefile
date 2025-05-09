@@ -17,13 +17,13 @@ SHELL=/bin/bash -o pipefail
 
 GO_PKG   := go.virtual-secrets.dev
 REPO     := $(notdir $(shell pwd))
-BIN      := apimachinery
+BIN      := taskqueue
 
 CRD_OPTIONS          ?= "crd:maxDescLen=0,generateEmbeddedObjectMeta=true,allowDangerousTypes=true"
 # https://github.com/appscodelabs/gengo-builder
 CODE_GENERATOR_IMAGE ?= ghcr.io/appscode/gengo:release-1.32
-CORE_API_GROUPS      ?= config:v1alpha1
-API_GROUPS           ?= $(CORE_API_GROUPS) virtual:v1alpha1
+CORE_API_GROUPS      ?= ops:v1alpha1
+API_GROUPS           ?= $(CORE_API_GROUPS)
 
 # This version-strategy uses git tags to set the version string
 git_branch       := $(shell git rev-parse --abbrev-ref HEAD)
@@ -174,9 +174,7 @@ gen-crds:
 			paths="./apis/..."              \
 			output:crd:artifacts:config=crds
 
-crd_to_patch := config.virtual-secrets.dev_secretmetadatas.yaml \
-								config.virtual-secrets.dev_secretstores.yaml \
-								virtual-secrets.dev_secrets.yaml
+crd_to_patch := ops.k8s.appscode.com_pendingtasks.yaml
 
 .PHONY: patch-crds
 patch-crds: $(addprefix patch-crd-, $(crd_to_patch))

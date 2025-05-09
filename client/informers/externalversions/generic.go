@@ -21,9 +21,7 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "go.virtual-secrets.dev/apimachinery/apis/config/v1alpha1"
-	virtualv1alpha1 "go.virtual-secrets.dev/apimachinery/apis/virtual/v1alpha1"
-
+	v1alpha1 "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -54,15 +52,9 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=config.virtual-secrets.dev, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("secretmetadatas"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Config().V1alpha1().SecretMetadatas().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("secretstores"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Config().V1alpha1().SecretStores().Informer()}, nil
-
-		// Group=virtual-secrets.dev, Version=v1alpha1
-	case virtualv1alpha1.SchemeGroupVersion.WithResource("secrets"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.VirtualSecrets().V1alpha1().Secrets().Informer()}, nil
+	// Group=ops.k8s.appscode.com, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithResource("pendingtasks"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Ops().V1alpha1().PendingTasks().Informer()}, nil
 
 	}
 
