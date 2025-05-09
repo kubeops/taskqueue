@@ -21,7 +21,8 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1"
+	v1alpha1 "kubeops.dev/taskqueue/apis/ops/v1alpha1"
+
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )

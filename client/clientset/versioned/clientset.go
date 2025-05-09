@@ -22,7 +22,8 @@ import (
 	"fmt"
 	"net/http"
 
-	opsv1alpha1 "go.virtual-secrets.dev/taskqueue/client/clientset/versioned/typed/ops/v1alpha1"
+	opsv1alpha1 "kubeops.dev/taskqueue/client/clientset/versioned/typed/ops/v1alpha1"
+
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

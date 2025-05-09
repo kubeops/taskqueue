@@ -36,11 +36,6 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTask":                             schema_taskqueue_apis_ops_v1alpha1_PendingTask(ref),
-		"go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTaskList":                         schema_taskqueue_apis_ops_v1alpha1_PendingTaskList(ref),
-		"go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTaskSpec":                         schema_taskqueue_apis_ops_v1alpha1_PendingTaskSpec(ref),
-		"go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTaskStatus":                       schema_taskqueue_apis_ops_v1alpha1_PendingTaskStatus(ref),
-		"go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.UnitTask":                                schema_taskqueue_apis_ops_v1alpha1_UnitTask(ref),
 		"k8s.io/api/apps/v1.ControllerRevision":                                                      schema_k8sio_api_apps_v1_ControllerRevision(ref),
 		"k8s.io/api/apps/v1.ControllerRevisionList":                                                  schema_k8sio_api_apps_v1_ControllerRevisionList(ref),
 		"k8s.io/api/apps/v1.DaemonSet":                                                               schema_k8sio_api_apps_v1_DaemonSet(ref),
@@ -442,170 +437,11 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"kmodules.xyz/client-go/api/v1.TypedObjectReference":                                         schema_kmodulesxyz_client_go_api_v1_TypedObjectReference(ref),
 		"kmodules.xyz/client-go/api/v1.X509Subject":                                                  schema_kmodulesxyz_client_go_api_v1_X509Subject(ref),
 		"kmodules.xyz/client-go/api/v1.stringSetMerger":                                              schema_kmodulesxyz_client_go_api_v1_stringSetMerger(ref),
-	}
-}
-
-func schema_taskqueue_apis_ops_v1alpha1_PendingTask(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiVersion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
-						},
-					},
-					"spec": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTaskSpec"),
-						},
-					},
-					"status": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTaskStatus"),
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			"go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTaskSpec", "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTaskStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
-	}
-}
-
-func schema_taskqueue_apis_ops_v1alpha1_PendingTaskList(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiVersion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
-						},
-					},
-					"items": {
-						SchemaProps: spec.SchemaProps{
-							Type: []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Default: map[string]interface{}{},
-										Ref:     ref("go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTask"),
-									},
-								},
-							},
-						},
-					},
-				},
-				Required: []string{"items"},
-			},
-		},
-		Dependencies: []string{
-			"go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.PendingTask", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
-	}
-}
-
-func schema_taskqueue_apis_ops_v1alpha1_PendingTaskSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
-				Properties: map[string]spec.Schema{
-					"task": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Task identifies the resource type that the taskQueue is responsible for triggering.",
-							Default:     map[string]interface{}{},
-							Ref:         ref("go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.UnitTask"),
-						},
-					},
-					"resource": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Resource contains the raw YAML/JSON representation of the Kubernetes resource to be triggered by the task queue.",
-							Ref:         ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			"go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1.UnitTask", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
-	}
-}
-
-func schema_taskqueue_apis_ops_v1alpha1_PendingTaskStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
-				Properties: map[string]spec.Schema{
-					"taskQueueName": {
-						SchemaProps: spec.SchemaProps{
-							Description: "TaskQueueName is the name of the taskQueue that is responsible for triggering this task.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func schema_taskqueue_apis_ops_v1alpha1_UnitTask(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"apiGroup": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-				},
-			},
-		},
+		"kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTask":                                        schema_taskqueue_apis_ops_v1alpha1_PendingTask(ref),
+		"kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTaskList":                                    schema_taskqueue_apis_ops_v1alpha1_PendingTaskList(ref),
+		"kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTaskSpec":                                    schema_taskqueue_apis_ops_v1alpha1_PendingTaskSpec(ref),
+		"kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTaskStatus":                                  schema_taskqueue_apis_ops_v1alpha1_PendingTaskStatus(ref),
+		"kubeops.dev/taskqueue/apis/ops/v1alpha1.UnitTask":                                           schema_taskqueue_apis_ops_v1alpha1_UnitTask(ref),
 	}
 }
 
@@ -22455,6 +22291,170 @@ func schema_kmodulesxyz_client_go_api_v1_stringSetMerger(ref common.ReferenceCal
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
+			},
+		},
+	}
+}
+
+func schema_taskqueue_apis_ops_v1alpha1_PendingTask(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTaskSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTaskStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTaskSpec", "kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTaskStatus"},
+	}
+}
+
+func schema_taskqueue_apis_ops_v1alpha1_PendingTaskList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTask"),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"items"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubeops.dev/taskqueue/apis/ops/v1alpha1.PendingTask"},
+	}
+}
+
+func schema_taskqueue_apis_ops_v1alpha1_PendingTaskSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"task": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Task identifies the resource type that the taskQueue is responsible for triggering.",
+							Default:     map[string]interface{}{},
+							Ref:         ref("kubeops.dev/taskqueue/apis/ops/v1alpha1.UnitTask"),
+						},
+					},
+					"resource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Resource contains the raw YAML/JSON representation of the Kubernetes resource to be triggered by the task queue.",
+							Ref:         ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/runtime.RawExtension", "kubeops.dev/taskqueue/apis/ops/v1alpha1.UnitTask"},
+	}
+}
+
+func schema_taskqueue_apis_ops_v1alpha1_PendingTaskStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"taskQueueName": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TaskQueueName is the name of the taskQueue that is responsible for triggering this task.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func schema_taskqueue_apis_ops_v1alpha1_UnitTask(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"apiGroup": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
 			},
 		},
 	}

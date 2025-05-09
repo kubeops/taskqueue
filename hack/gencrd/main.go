@@ -20,11 +20,10 @@ import (
 	"os"
 	"path/filepath"
 
-	//configinstall "go.virtual-secrets.dev/apimachinery/apis/config/install"
-	//configapi "go.virtual-secrets.dev/apimachinery/apis/config/v1alpha1"
-
-	configinstall "go.virtual-secrets.dev/taskqueue/apis/ops/install"
-	configapi "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1"
+	// configinstall "kubeops.dev/apimachinery/apis/config/install"
+	// configapi "kubeops.dev/apimachinery/apis/config/v1alpha1"
+	configinstall "kubeops.dev/taskqueue/apis/ops/install"
+	configapi "kubeops.dev/taskqueue/apis/ops/v1alpha1"
 
 	gort "gomodules.xyz/runtime"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -71,7 +70,7 @@ func generateSwaggerJson() {
 		klog.Fatal(err)
 	}
 
-	filename := gort.GOPath() + "/src/go.virtual-secrets.dev/taskqueue/openapi/swagger.json"
+	filename := gort.GOPath() + "/src/kubeops.dev/taskqueue/openapi/swagger.json"
 	err = os.MkdirAll(filepath.Dir(filename), 0o755)
 	if err != nil {
 		klog.Fatal(err)

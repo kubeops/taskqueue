@@ -19,8 +19,8 @@ limitations under the License.
 package ops
 
 import (
-	internalinterfaces "go.virtual-secrets.dev/taskqueue/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "go.virtual-secrets.dev/taskqueue/client/informers/externalversions/ops/v1alpha1"
+	internalinterfaces "kubeops.dev/taskqueue/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "kubeops.dev/taskqueue/client/informers/externalversions/ops/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

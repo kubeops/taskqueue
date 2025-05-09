@@ -23,9 +23,10 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "go.virtual-secrets.dev/taskqueue/client/clientset/versioned"
-	internalinterfaces "go.virtual-secrets.dev/taskqueue/client/informers/externalversions/internalinterfaces"
-	ops "go.virtual-secrets.dev/taskqueue/client/informers/externalversions/ops"
+	versioned "kubeops.dev/taskqueue/client/clientset/versioned"
+	internalinterfaces "kubeops.dev/taskqueue/client/informers/externalversions/internalinterfaces"
+	ops "kubeops.dev/taskqueue/client/informers/externalversions/ops"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

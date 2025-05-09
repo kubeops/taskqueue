@@ -19,7 +19,8 @@ limitations under the License.
 package fake
 
 import (
-	opsv1alpha1 "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1"
+	opsv1alpha1 "kubeops.dev/taskqueue/apis/ops/v1alpha1"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

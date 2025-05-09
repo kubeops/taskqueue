@@ -22,8 +22,9 @@ import (
 	"context"
 	"time"
 
-	v1alpha1 "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1"
-	scheme "go.virtual-secrets.dev/taskqueue/client/clientset/versioned/scheme"
+	v1alpha1 "kubeops.dev/taskqueue/apis/ops/v1alpha1"
+	scheme "kubeops.dev/taskqueue/client/clientset/versioned/scheme"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

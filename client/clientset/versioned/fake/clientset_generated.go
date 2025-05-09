@@ -19,9 +19,10 @@ limitations under the License.
 package fake
 
 import (
-	clientset "go.virtual-secrets.dev/taskqueue/client/clientset/versioned"
-	opsv1alpha1 "go.virtual-secrets.dev/taskqueue/client/clientset/versioned/typed/ops/v1alpha1"
-	fakeopsv1alpha1 "go.virtual-secrets.dev/taskqueue/client/clientset/versioned/typed/ops/v1alpha1/fake"
+	clientset "kubeops.dev/taskqueue/client/clientset/versioned"
+	opsv1alpha1 "kubeops.dev/taskqueue/client/clientset/versioned/typed/ops/v1alpha1"
+	fakeopsv1alpha1 "kubeops.dev/taskqueue/client/clientset/versioned/typed/ops/v1alpha1/fake"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

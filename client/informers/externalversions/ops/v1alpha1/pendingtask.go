@@ -22,10 +22,11 @@ import (
 	"context"
 	time "time"
 
-	opsv1alpha1 "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1"
-	versioned "go.virtual-secrets.dev/taskqueue/client/clientset/versioned"
-	internalinterfaces "go.virtual-secrets.dev/taskqueue/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "go.virtual-secrets.dev/taskqueue/client/listers/ops/v1alpha1"
+	opsv1alpha1 "kubeops.dev/taskqueue/apis/ops/v1alpha1"
+	versioned "kubeops.dev/taskqueue/client/clientset/versioned"
+	internalinterfaces "kubeops.dev/taskqueue/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "kubeops.dev/taskqueue/client/listers/ops/v1alpha1"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"

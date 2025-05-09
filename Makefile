@@ -15,7 +15,7 @@
 
 SHELL=/bin/bash -o pipefail
 
-GO_PKG   := go.virtual-secrets.dev
+GO_PKG   := kubeops.dev
 REPO     := $(notdir $(shell pwd))
 BIN      := taskqueue
 

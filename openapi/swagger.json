@@ -160,7 +160,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskList"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTaskList"
             }
           }
         },
@@ -194,7 +194,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           {
@@ -219,19 +219,19 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           "202": {
             "description": "Accepted",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           }
         },
@@ -350,7 +350,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           }
         },
@@ -384,7 +384,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           {
@@ -409,13 +409,13 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           }
         },
@@ -537,13 +537,13 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+              "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
             }
           }
         },
@@ -746,7 +746,7 @@
     }
   },
   "definitions": {
-    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask": {
+    "dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask": {
       "type": "object",
       "properties": {
         "apiVersion": {
@@ -763,11 +763,11 @@
         },
         "spec": {
           "default": {},
-          "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskSpec"
+          "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTaskSpec"
         },
         "status": {
           "default": {},
-          "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskStatus"
+          "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTaskStatus"
         }
       },
       "x-kubernetes-group-version-kind": [
@@ -783,7 +783,7 @@
         }
       ]
     },
-    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskList": {
+    "dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTaskList": {
       "type": "object",
       "required": [
         "items"
@@ -797,7 +797,7 @@
           "type": "array",
           "items": {
             "default": {},
-            "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTask"
+            "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTask"
           }
         },
         "kind": {
@@ -817,7 +817,7 @@
         }
       ]
     },
-    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskSpec": {
+    "dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTaskSpec": {
       "type": "object",
       "properties": {
         "resource": {
@@ -827,11 +827,11 @@
         "task": {
           "description": "Task identifies the resource type that the taskQueue is responsible for triggering.",
           "default": {},
-          "$ref": "#/definitions/dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.UnitTask"
+          "$ref": "#/definitions/dev.kubeops.taskqueue.apis.ops.v1alpha1.UnitTask"
         }
       }
     },
-    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.PendingTaskStatus": {
+    "dev.kubeops.taskqueue.apis.ops.v1alpha1.PendingTaskStatus": {
       "type": "object",
       "properties": {
         "taskQueueName": {
@@ -840,7 +840,7 @@
         }
       }
     },
-    "dev.virtual-secrets.go.taskqueue.apis.ops.v1alpha1.UnitTask": {
+    "dev.kubeops.taskqueue.apis.ops.v1alpha1.UnitTask": {
       "type": "object",
       "properties": {
         "apiGroup": {

@@ -17,7 +17,7 @@
 set -eou pipefail
 
 GOPATH=$(go env GOPATH)
-REPO_ROOT="$GOPATH/src/go.virtual-secrets.dev/apimachinery"
+REPO_ROOT="$GOPATH/src/kubeops.dev/taskqueue"
 
 pushd $REPO_ROOT
 

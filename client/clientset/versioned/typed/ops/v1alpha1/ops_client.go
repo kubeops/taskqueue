@@ -21,8 +21,9 @@ package v1alpha1
 import (
 	"net/http"
 
-	v1alpha1 "go.virtual-secrets.dev/taskqueue/apis/ops/v1alpha1"
-	"go.virtual-secrets.dev/taskqueue/client/clientset/versioned/scheme"
+	v1alpha1 "kubeops.dev/taskqueue/apis/ops/v1alpha1"
+	"kubeops.dev/taskqueue/client/clientset/versioned/scheme"
+
 	rest "k8s.io/client-go/rest"
 )
 
