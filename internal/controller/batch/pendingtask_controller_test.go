@@ -30,7 +30,7 @@ import (
 	batchv1alpha1 "kubeops.dev/taskqueue/api/batch/v1alpha1"
 )
 
-var _ = Describe("PendingTask Controller", func() {
+var _ = Describe("pendingTask Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -43,7 +43,7 @@ var _ = Describe("PendingTask Controller", func() {
 		pendingtask := &batchv1alpha1.PendingTask{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind PendingTask")
+			By("creating the custom resource for the Kind pendingTask")
 			err := k8sClient.Get(ctx, typeNamespacedName, pendingtask)
 			if err != nil && errors.IsNotFound(err) {
 				resource := &batchv1alpha1.PendingTask{
@@ -63,7 +63,7 @@ var _ = Describe("PendingTask Controller", func() {
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance PendingTask")
+			By("Cleanup the specific resource instance pendingTask")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {

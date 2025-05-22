@@ -20,6 +20,10 @@ import (
 	"context"
 	"crypto/tls"
 	"flag"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"os"
 	"path/filepath"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -208,7 +212,7 @@ func main() {
 		os.Exit(1)
 	}
 	mapOfQueues = make(map[string]*workqueue.Typed[string])
-	mapOfTasks = make(map[string]struct{})
+	mapOfWatchResources := make(map[schema.GroupVersionResource]struct{})
 	//if err := mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
 	//	initializeMapOfQueues(mgr.GetClient())
 	//	return nil
@@ -216,11 +220,25 @@ func main() {
 	//	setupLog.Error(err, "unable to add mapOfQueues initializer")
 	//	os.Exit(1)
 	//}
+
+	dynClient, err := dynamic.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		setupLog.Error(err, "unable to initialize dynamic client")
+		os.Exit(1)
+	}
+	//cfg := ctrl.GetConfigOrDie()
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(mgr.GetConfig())
+	if err != nil {
+		setupLog.Error(err, "unable to initialize discovery client")
+		os.Exit(1)
+	}
 	if err = (&batchcontroller.TaskQueueReconciler{
-		Client:      mgr.GetClient(),
-		Scheme:      mgr.GetScheme(),
-		MapOfQueues: mapOfQueues,
-		MapOfTasks:  mapOfTasks,
+		Client:                 mgr.GetClient(),
+		Scheme:                 mgr.GetScheme(),
+		MapOfQueues:            mapOfQueues,
+		MapOfWatchResources:    mapOfWatchResources,
+		DynamicInformerFactory: dynamicinformer.NewDynamicSharedInformerFactory(dynClient, 0),
+		DiscoveryClient:        discoveryClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TaskQueue")
 		os.Exit(1)
@@ -230,9 +248,8 @@ func main() {
 		Client:      mgr.GetClient(),
 		Scheme:      mgr.GetScheme(),
 		MapOfQueues: mapOfQueues,
-		MapOfTasks:  mapOfTasks,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "PendingTask")
+		setupLog.Error(err, "unable to create controller", "controller", "pendingTask")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
