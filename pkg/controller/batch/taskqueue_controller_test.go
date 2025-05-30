@@ -19,7 +19,7 @@ package batch
 import (
 	"context"
 
-	batchv1alpha1 "kubeops.dev/taskqueue/apis/batch/v1alpha1"
+	queueapi "kubeops.dev/taskqueue/apis/batch/v1alpha1"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -39,13 +39,13 @@ var _ = Describe("TaskQueue Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		taskqueue := &batchv1alpha1.TaskQueue{}
+		taskqueue := &queueapi.TaskQueue{}
 
 		BeforeEach(func() {
 			By("creating the custom resource for the Kind TaskQueue")
 			err := k8sClient.Get(ctx, typeNamespacedName, taskqueue)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &batchv1alpha1.TaskQueue{
+				resource := &queueapi.TaskQueue{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
@@ -58,7 +58,7 @@ var _ = Describe("TaskQueue Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &batchv1alpha1.TaskQueue{}
+			resource := &queueapi.TaskQueue{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 

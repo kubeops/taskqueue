@@ -17,15 +17,14 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type TaskPhase string
 
 const (
-	TaskPhaseInPending  TaskPhase = "InPending"
-	TaskPhaseInProgress TaskPhase = "InProgress"
+	TaskPhaseInPending  TaskPhase = "Pending"
+	TaskPhaseInProgress TaskPhase = "Progress"
 	TaskPhaseFailed     TaskPhase = "Failed"
 	TaskPhaseSuccessful TaskPhase = "Successful"
 )
@@ -47,8 +46,8 @@ type TaskQueue struct {
 // TaskQueueSpec defines the desired state of TaskQueue.
 type TaskQueueSpec struct {
 	// MaxConcurrentTasks specifies the maximum number of tasks can run concurrently.
-	// Defaults to 20 if not set.
-	// +kubebuilder:default=20
+	// Defaults to 10 if not set.
+	// +kubebuilder:default=10
 	// +optional
 	MaxConcurrentTasks int `json:"maxConcurrentTasks,omitempty"`
 
@@ -95,15 +94,6 @@ type TaskQueueStatus struct {
 	// +optional
 	TriggeredTasksPhase map[string]TaskPhase `json:"triggeredTasksPhase,omitempty"`
 }
-
-type TriggeredTaskPhase struct {
-	// TaskReference is a reference to the task that was triggered.
-	TaskReference v1.TypedObjectReference `json:"taskReference,omitempty"`
-
-	// Phase indicates the current phase of the task.
-	Phase string `json:"phase,omitempty"`
-}
-
 type UnitTask struct {
 	Type TypedResourceReference `json:"type,omitempty"`
 	// Rules defines ObjectPhaseRules. It contains three identification rules of successful phase of the object,
@@ -116,8 +106,8 @@ type UnitTask struct {
 	Rules ObjectPhaseRules `json:"rules"`
 }
 type TypedResourceReference struct {
-	Kind     string `json:"kind,omitempty"`
-	APIGroup string `json:"apiGroup,omitempty"`
+	Kind     string `json:"kind"`
+	APIGroup string `json:"apiGroup"`
 }
 
 // +kubebuilder:object:root=true

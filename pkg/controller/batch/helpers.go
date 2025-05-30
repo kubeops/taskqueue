@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	batchv1alpha1 "kubeops.dev/taskqueue/apis/batch/v1alpha1"
+	queueapi "kubeops.dev/taskqueue/apis/batch/v1alpha1"
 
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/checker/decls"
@@ -140,7 +140,7 @@ func getPreferredResourceVersion(discoveryClient *discovery.DiscoveryClient, gk 
 	return "", "", fmt.Errorf("resource %s/%s not found in discovery", gk.Group, gk.Kind)
 }
 
-func getGVR(discoveryClient *discovery.DiscoveryClient, typeRef batchv1alpha1.TypedResourceReference) (schema.GroupVersionResource, error) {
+func getGVR(discoveryClient *discovery.DiscoveryClient, typeRef queueapi.TypedResourceReference) (schema.GroupVersionResource, error) {
 	apiResource, version, err := getPreferredResourceVersion(discoveryClient, schema.GroupKind{
 		Group: typeRef.APIGroup,
 		Kind:  typeRef.Kind,

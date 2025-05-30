@@ -34,15 +34,12 @@ func NewSharedQueuePool() *SharedQueuePool {
 	}
 }
 
+// Group 1: Top-level operations (MapOfQueues + globalMu)
+
 func (pool *SharedQueuePool) WithMutexLock(fn func()) {
 	pool.globalMu.Lock()
 	defer pool.globalMu.Unlock()
 	fn()
-}
-
-func (pool *SharedQueuePool) getLock(queueName string) *sync.RWMutex {
-	lockIface, _ := pool.locks.LoadOrStore(queueName, &sync.RWMutex{})
-	return lockIface.(*sync.RWMutex)
 }
 
 func (pool *SharedQueuePool) Add(queueName string) {
@@ -65,37 +62,6 @@ func (pool *SharedQueuePool) Remove(queueName string) {
 	}
 }
 
-func (pool *SharedQueuePool) Enqueue(queueName string, data string) {
-	lock := pool.getLock(queueName)
-	lock.RLock()
-	defer lock.RUnlock()
-
-	pool.globalMu.RLock()
-	q, exists := pool.MapOfQueues[queueName]
-	pool.globalMu.RUnlock()
-
-	if exists {
-		q.Add(data)
-	}
-}
-
-func (pool *SharedQueuePool) Dequeue(queueName string) (string, bool) {
-	lock := pool.getLock(queueName)
-	lock.RLock()
-	defer lock.RUnlock()
-
-	pool.globalMu.RLock()
-	q, exists := pool.MapOfQueues[queueName]
-	pool.globalMu.RUnlock()
-
-	if exists {
-		item, shutdown := q.Get()
-		q.Done(item)
-		return item, shutdown
-	}
-	return "", false
-}
-
 func (pool *SharedQueuePool) Exists(queueName string) bool {
 	pool.globalMu.RLock()
 	defer pool.globalMu.RUnlock()
@@ -103,24 +69,10 @@ func (pool *SharedQueuePool) Exists(queueName string) bool {
 	return exists
 }
 
-func (pool *SharedQueuePool) Len() int {
+func (pool *SharedQueuePool) NumberOfQueue() int {
 	pool.globalMu.RLock()
 	defer pool.globalMu.RUnlock()
 	return len(pool.MapOfQueues)
-}
-
-func (pool *SharedQueuePool) QueueLength(queueName string) int {
-	lock := pool.getLock(queueName)
-	lock.RLock()
-	defer lock.RUnlock()
-
-	pool.globalMu.RLock()
-	defer pool.globalMu.RUnlock()
-
-	if q, exists := pool.MapOfQueues[queueName]; exists {
-		return q.Len()
-	}
-	return 0
 }
 
 func (pool *SharedQueuePool) ListQueues() []string {
@@ -132,4 +84,45 @@ func (pool *SharedQueuePool) ListQueues() []string {
 		keys = append(keys, name)
 	}
 	return keys
+}
+
+// Group 2: Per-queue operations (individual queues + per-queue lock)
+
+func (pool *SharedQueuePool) getLock(queueName string) *sync.RWMutex {
+	lockIface, _ := pool.locks.LoadOrStore(queueName, &sync.RWMutex{})
+	return lockIface.(*sync.RWMutex)
+}
+
+func (pool *SharedQueuePool) Enqueue(queueName string, data string) {
+	lock := pool.getLock(queueName)
+	lock.RLock()
+	defer lock.RUnlock()
+
+	if pool.Exists(queueName) {
+		pool.MapOfQueues[queueName].Add(data)
+	}
+}
+
+func (pool *SharedQueuePool) Dequeue(queueName string) (string, bool) {
+	lock := pool.getLock(queueName)
+	lock.RLock()
+	defer lock.RUnlock()
+
+	if pool.Exists(queueName) {
+		item, shutdown := pool.MapOfQueues[queueName].Get()
+		pool.MapOfQueues[queueName].Done(item)
+		return item, shutdown
+	}
+	return "", false
+}
+
+func (pool *SharedQueuePool) QueueLength(queueName string) int {
+	lock := pool.getLock(queueName)
+	lock.RLock()
+	defer lock.RUnlock()
+
+	if pool.Exists(queueName) {
+		return pool.MapOfQueues[queueName].Len()
+	}
+	return 0
 }

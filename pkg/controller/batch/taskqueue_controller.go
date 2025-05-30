@@ -23,7 +23,7 @@ import (
 	"strings"
 	"sync"
 
-	batchv1alpha1 "kubeops.dev/taskqueue/apis/batch/v1alpha1"
+	queueapi "kubeops.dev/taskqueue/apis/batch/v1alpha1"
 	"kubeops.dev/taskqueue/pkg/queue"
 
 	"github.com/go-logr/logr"
@@ -38,7 +38,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
-	kmc "kmodules.xyz/client-go/client"
+	cu "kmodules.xyz/client-go/client"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -90,21 +90,21 @@ func (r *TaskQueueReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	return ctrl.Result{}, nil
 }
 
-func (r *TaskQueueReconciler) getTaskQueue(ctx context.Context, namespace, name string) (*batchv1alpha1.TaskQueue, error) {
+func (r *TaskQueueReconciler) getTaskQueue(ctx context.Context, namespace, name string) (*queueapi.TaskQueue, error) {
 	var err error
-	tq := &batchv1alpha1.TaskQueue{}
+	tq := &queueapi.TaskQueue{}
 	if err = r.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, tq); err != nil {
 		return nil, client.IgnoreNotFound(err)
 	}
 	return tq, nil
 }
 
-func (r *TaskQueueReconciler) handleDeletion(ctx context.Context, logger logr.Logger, tq *batchv1alpha1.TaskQueue) (ctrl.Result, error) {
+func (r *TaskQueueReconciler) handleDeletion(ctx context.Context, logger logr.Logger, tq *queueapi.TaskQueue) (ctrl.Result, error) {
 	logger.Info("Handling deletion")
 	r.QueuePool.Remove(tq.Name)
 
 	if controllerutil.ContainsFinalizer(tq, taskQueueFinalizer) {
-		_, err := kmc.CreateOrPatch(ctx, r.Client, tq, func(obj client.Object, createOp bool) client.Object {
+		_, err := cu.CreateOrPatch(ctx, r.Client, tq, func(obj client.Object, createOp bool) client.Object {
 			controllerutil.RemoveFinalizer(obj, taskQueueFinalizer)
 			return obj
 		})
@@ -167,7 +167,7 @@ func (r *TaskQueueReconciler) handleResourcesUpdate(ctx context.Context, obj int
 }
 
 func (r *TaskQueueReconciler) findMatchingTaskQueue(ctx context.Context, obj *unstructured.Unstructured) (string, error) {
-	var taskQueueList batchv1alpha1.TaskQueueList
+	var taskQueueList queueapi.TaskQueueList
 	if err := r.List(ctx, &taskQueueList); err != nil {
 		return "", fmt.Errorf("failed to list TaskQueues: %w", err)
 	}
@@ -181,10 +181,10 @@ func (r *TaskQueueReconciler) findMatchingTaskQueue(ctx context.Context, obj *un
 	return "", nil
 }
 
-func (r *TaskQueueReconciler) ensureFinalizer(ctx context.Context, logger logr.Logger, tq *batchv1alpha1.TaskQueue) error {
+func (r *TaskQueueReconciler) ensureFinalizer(ctx context.Context, logger logr.Logger, tq *queueapi.TaskQueue) error {
 	if !controllerutil.ContainsFinalizer(tq, taskQueueFinalizer) {
 		logger.Info("Adding finalizer for TaskQueue")
-		_, err := kmc.CreateOrPatch(ctx, r.Client, tq, func(obj client.Object, createOp bool) client.Object {
+		_, err := cu.CreateOrPatch(ctx, r.Client, tq, func(obj client.Object, createOp bool) client.Object {
 			controllerutil.AddFinalizer(obj, taskQueueFinalizer)
 			return obj
 		})
@@ -193,9 +193,9 @@ func (r *TaskQueueReconciler) ensureFinalizer(ctx context.Context, logger logr.L
 	return nil
 }
 
-func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *batchv1alpha1.TaskQueue, keyFilter func(key string) bool) error {
+func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queueapi.TaskQueue, keyFilter func(key string) bool) error {
 	if tq.Status.TriggeredTasksPhase == nil {
-		tq.Status.TriggeredTasksPhase = make(map[string]batchv1alpha1.TaskPhase)
+		tq.Status.TriggeredTasksPhase = make(map[string]queueapi.TaskPhase)
 	}
 	var errs []error
 	for key := range tq.Status.TriggeredTasksPhase {
@@ -229,7 +229,7 @@ func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *batch
 	return utilerrors.NewAggregate(errs)
 }
 
-func (r *TaskQueueReconciler) evaluateObjectPhase(obj *unstructured.Unstructured, tq *batchv1alpha1.TaskQueue) (bool, batchv1alpha1.TaskPhase, error) {
+func (r *TaskQueueReconciler) evaluateObjectPhase(obj *unstructured.Unstructured, tq *queueapi.TaskQueue) (bool, queueapi.TaskPhase, error) {
 	ruleSet := r.getRuleSetFromTaskQueue(obj, tq)
 
 	if ok, err := evalCEL(obj, ruleSet.Success); err != nil || ok {
@@ -241,25 +241,25 @@ func (r *TaskQueueReconciler) evaluateObjectPhase(obj *unstructured.Unstructured
 	}
 
 	if ok, err := evalCEL(obj, ruleSet.InProgress); err != nil || ok { // If the object is in progress, we keep it in the status map
-		return true, batchv1alpha1.TaskPhaseInProgress, err
+		return true, queueapi.TaskPhaseInProgress, err
 	}
 
 	return true, "", nil
 }
 
-func (r *TaskQueueReconciler) deleteKeyFromTasksPhase(tq *batchv1alpha1.TaskQueue, key string) {
+func (r *TaskQueueReconciler) deleteKeyFromTasksPhase(tq *queueapi.TaskQueue, key string) {
 	r.QueuePool.WithMutexLock(func() {
 		delete(tq.Status.TriggeredTasksPhase, key)
 	})
 }
 
-func (r *TaskQueueReconciler) updateTasksPhase(tq *batchv1alpha1.TaskQueue, key string, phase batchv1alpha1.TaskPhase) {
+func (r *TaskQueueReconciler) updateTasksPhase(tq *queueapi.TaskQueue, key string, phase queueapi.TaskPhase) {
 	r.QueuePool.WithMutexLock(func() {
 		tq.Status.TriggeredTasksPhase[key] = phase
 	})
 }
 
-func (r *TaskQueueReconciler) processPendingTasks(ctx context.Context, logger logr.Logger, tq *batchv1alpha1.TaskQueue) error {
+func (r *TaskQueueReconciler) processPendingTasks(ctx context.Context, logger logr.Logger, tq *queueapi.TaskQueue) error {
 	if !r.QueuePool.Exists(tq.Name) {
 		logger.Info("TaskQueue not found in queue pool, skipping processing", "taskQueue", tq.Name)
 		return nil
@@ -285,13 +285,13 @@ func (r *TaskQueueReconciler) processPendingTasks(ctx context.Context, logger lo
 	return nil
 }
 
-func (r *TaskQueueReconciler) syncWatchingResourceOnce(ctx context.Context, logger logr.Logger, tq *batchv1alpha1.TaskQueue) error {
+func (r *TaskQueueReconciler) syncWatchingResourceOnce(ctx context.Context, logger logr.Logger, tq *queueapi.TaskQueue) error {
 	var errs []error
 	r.once.Do(func() {
 		logger.Info("Syncing watching resources for TaskQueue", "taskQueue", tq.Name)
 		for key := range tq.Status.TriggeredTasksPhase {
 			gvk, _, _ := parseStatusKey(key)
-			gvr, err := getGVR(r.DiscoveryClient, batchv1alpha1.TypedResourceReference{
+			gvr, err := getGVR(r.DiscoveryClient, queueapi.TypedResourceReference{
 				APIGroup: gvk.Group,
 				Kind:     gvk.Kind,
 			})
@@ -305,12 +305,12 @@ func (r *TaskQueueReconciler) syncWatchingResourceOnce(ctx context.Context, logg
 	return utilerrors.NewAggregate(errs)
 }
 
-func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, tq *batchv1alpha1.TaskQueue, pt *batchv1alpha1.PendingTask) error {
+func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, tq *queueapi.TaskQueue, pt *queueapi.PendingTask) error {
 	var obj unstructured.Unstructured
 	if err := json.Unmarshal(pt.Spec.Resource.Raw, &obj.Object); err != nil {
 		return fmt.Errorf("failed to unmarshal task resource: %w", err)
 	}
-	if _, err := kmc.CreateOrPatch(ctx, r.Client, &obj,
+	if _, err := cu.CreateOrPatch(ctx, r.Client, &obj,
 		func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*unstructured.Unstructured)
 			return in
@@ -318,20 +318,20 @@ func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, tq *batchv1
 	); err != nil {
 		return fmt.Errorf("failed to create or patch task: %w", err)
 	}
-	r.updateTasksPhase(tq, getKeyFromObj(&obj), batchv1alpha1.TaskPhaseInPending)
+	r.updateTasksPhase(tq, getKeyFromObj(&obj), queueapi.TaskPhaseInPending)
 	if err := r.Delete(ctx, pt); err != nil {
 		return fmt.Errorf("failed to delete task object: %w", err)
 	}
 	return nil
 }
 
-func (r *TaskQueueReconciler) updateStatus(ctx context.Context, tq *batchv1alpha1.TaskQueue) error {
-	_, err := kmc.PatchStatus(
+func (r *TaskQueueReconciler) updateStatus(ctx context.Context, tq *queueapi.TaskQueue) error {
+	_, err := cu.PatchStatus(
 		ctx,
 		r.Client,
 		tq,
 		func(obj client.Object) client.Object {
-			in := obj.(*batchv1alpha1.TaskQueue)
+			in := obj.(*queueapi.TaskQueue)
 			in.Status = tq.Status
 			return in
 		},
@@ -339,32 +339,32 @@ func (r *TaskQueueReconciler) updateStatus(ctx context.Context, tq *batchv1alpha
 	return client.IgnoreNotFound(err)
 }
 
-func (r *TaskQueueReconciler) getRuleSetFromTaskQueue(obj *unstructured.Unstructured, tq *batchv1alpha1.TaskQueue) batchv1alpha1.ObjectPhaseRules {
+func (r *TaskQueueReconciler) getRuleSetFromTaskQueue(obj *unstructured.Unstructured, tq *queueapi.TaskQueue) queueapi.ObjectPhaseRules {
 	for _, task := range tq.Spec.Tasks {
 		if task.Type.Kind == obj.GetKind() && task.Type.APIGroup == obj.GroupVersionKind().Group {
 			return task.Rules
 		}
 	}
-	return batchv1alpha1.ObjectPhaseRules{}
+	return queueapi.ObjectPhaseRules{}
 }
 
-func (r *TaskQueueReconciler) getInProgressTaskCount(tq *batchv1alpha1.TaskQueue) int {
+func (r *TaskQueueReconciler) getInProgressTaskCount(tq *queueapi.TaskQueue) int {
 	count := 0
 	for _, phase := range tq.Status.TriggeredTasksPhase {
-		if phase == batchv1alpha1.TaskPhaseInProgress || phase == batchv1alpha1.TaskPhaseInPending {
+		if phase == queueapi.TaskPhaseInProgress || phase == queueapi.TaskPhaseInPending {
 			count++
 		}
 	}
 	return count
 }
 
-func (r *TaskQueueReconciler) getPendingTask(ctx context.Context, tq *batchv1alpha1.TaskQueue) (*batchv1alpha1.PendingTask, error) {
+func (r *TaskQueueReconciler) getPendingTask(ctx context.Context, tq *queueapi.TaskQueue) (*queueapi.PendingTask, error) {
 	key, shutting := r.QueuePool.Dequeue(tq.Name)
 	if shutting {
 		return nil, nil
 	}
 
-	pendingTask := &batchv1alpha1.PendingTask{}
+	pendingTask := &queueapi.PendingTask{}
 	if err := r.Get(ctx, types.NamespacedName{Name: key}, pendingTask); err != nil {
 		return nil, err
 	}
@@ -372,7 +372,7 @@ func (r *TaskQueueReconciler) getPendingTask(ctx context.Context, tq *batchv1alp
 }
 
 func (r *TaskQueueReconciler) handlerForUpdatePendingTask(ctx context.Context, e event.TypedUpdateEvent[client.Object], w workqueue.TypedRateLimitingInterface[reconcile.Request]) {
-	pt := e.ObjectNew.(*batchv1alpha1.PendingTask)
+	pt := e.ObjectNew.(*queueapi.PendingTask)
 	if pt.Status.TaskQueueName != "" {
 		log.FromContext(ctx).V(1).Info("PendingTask updated, enqueuing referenced TaskQueue", "pendingTaskName", pt.Name, "taskQueueName", pt.Status.TaskQueueName)
 		w.Add(reconcile.Request{
@@ -383,9 +383,9 @@ func (r *TaskQueueReconciler) handlerForUpdatePendingTask(ctx context.Context, e
 
 func (r *TaskQueueReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&batchv1alpha1.TaskQueue{}).
+		For(&queueapi.TaskQueue{}).
 		Watches(
-			&batchv1alpha1.PendingTask{},
+			&queueapi.PendingTask{},
 			&handler.Funcs{
 				UpdateFunc: r.handlerForUpdatePendingTask,
 			},

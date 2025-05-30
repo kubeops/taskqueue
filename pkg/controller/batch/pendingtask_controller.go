@@ -21,13 +21,13 @@ import (
 	"fmt"
 	"sync"
 
-	batchv1alpha1 "kubeops.dev/taskqueue/apis/batch/v1alpha1"
+	queueapi "kubeops.dev/taskqueue/apis/batch/v1alpha1"
 	"kubeops.dev/taskqueue/pkg/queue"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/errors"
-	kmc "kmodules.xyz/client-go/client"
+	cu "kmodules.xyz/client-go/client"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -53,7 +53,7 @@ func (r *PendingTaskReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{Requeue: true}, fmt.Errorf("failed to sync queue pool: %v", err)
 	}
 
-	pendingTask := &batchv1alpha1.PendingTask{}
+	pendingTask := &queueapi.PendingTask{}
 	if err := r.Get(ctx, req.NamespacedName, pendingTask); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -71,7 +71,7 @@ func (r *PendingTaskReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, nil
 	}
 
-	pendingTask.Status = batchv1alpha1.PendingTaskStatus{
+	pendingTask.Status = queueapi.PendingTaskStatus{
 		TaskQueueName: taskQueueName,
 	}
 
@@ -85,13 +85,13 @@ func (r *PendingTaskReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	return ctrl.Result{}, nil
 }
 
-func (r *PendingTaskReconciler) updateStatus(ctx context.Context, pt *batchv1alpha1.PendingTask) error {
-	_, err := kmc.PatchStatus(
+func (r *PendingTaskReconciler) updateStatus(ctx context.Context, pt *queueapi.PendingTask) error {
+	_, err := cu.PatchStatus(
 		ctx,
 		r.Client,
 		pt,
 		func(obj client.Object) client.Object {
-			in := obj.(*batchv1alpha1.PendingTask)
+			in := obj.(*queueapi.PendingTask)
 			in.Status = pt.Status
 			return in
 		},
@@ -102,7 +102,7 @@ func (r *PendingTaskReconciler) updateStatus(ctx context.Context, pt *batchv1alp
 func (r *PendingTaskReconciler) syncQueuePoolOnce(ctx context.Context, logger logr.Logger) error {
 	var errs []error
 	r.once.Do(func() {
-		var pendingTaskList batchv1alpha1.PendingTaskList
+		var pendingTaskList queueapi.PendingTaskList
 		if err := r.List(ctx, &pendingTaskList); err != nil {
 			errs = append(errs, fmt.Errorf("failed to list pendingTasks: %w", err))
 			return
@@ -122,8 +122,8 @@ func (r *PendingTaskReconciler) syncQueuePoolOnce(ctx context.Context, logger lo
 	return errors.NewAggregate(errs)
 }
 
-func (r *PendingTaskReconciler) matchTaskQueue(ctx context.Context, taskType batchv1alpha1.TypedResourceReference) (string, error) {
-	var taskQueueList batchv1alpha1.TaskQueueList
+func (r *PendingTaskReconciler) matchTaskQueue(ctx context.Context, taskType queueapi.TypedResourceReference) (string, error) {
+	var taskQueueList queueapi.TaskQueueList
 	if err := r.List(ctx, &taskQueueList); err != nil {
 		return "", fmt.Errorf("failed to list TaskQueues: %w", err)
 	}
@@ -140,6 +140,6 @@ func (r *PendingTaskReconciler) matchTaskQueue(ctx context.Context, taskType bat
 
 func (r *PendingTaskReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&batchv1alpha1.PendingTask{}).
+		For(&queueapi.PendingTask{}).
 		Complete(r)
 }
