@@ -1,225 +1,473 @@
-# Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+# Copyright AppsCode Inc. and Contributors
+#
+# Licensed under the AppsCode Community License 1.0.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
-ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
+# Copyright AppsCode Inc. and Contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+SHELL=/bin/bash -o pipefail
+
+PRODUCT_OWNER_NAME := appscode
+PRODUCT_NAME       := taskqueue
+ENFORCE_LICENSE    ?=
+
+GO_PKG   := kubeops.dev
+REPO     := $(notdir $(shell pwd))
+BIN      := taskqueue
+COMPRESS ?= no
+
+CRD_OPTIONS          ?= "crd:crdVersions={v1},allowDangerousTypes=true"
+CODE_GENERATOR_IMAGE ?= ghcr.io/appscode/gengo:release-1.32
+API_GROUPS           ?= batch:v1alpha1
+
+# Where to push the docker image.
+REGISTRY ?= ghcr.io/appscode
+SRC_REG  ?=
+
+# This version-strategy uses git tags to set the version string
+git_branch       := $(shell git rev-parse --abbrev-ref HEAD)
+git_tag          := $(shell git describe --exact-match --abbrev=0 2>/dev/null || echo "")
+commit_hash      := $(shell git rev-parse --verify HEAD)
+commit_timestamp := $(shell date --date="@$$(git show -s --format=%ct)" --utc +%FT%T)
+
+VERSION          := $(shell git describe --tags --always --dirty)
+version_strategy := commit_hash
+ifdef git_tag
+	VERSION := $(git_tag)
+	version_strategy := tag
 else
-GOBIN=$(shell go env GOBIN)
+	ifeq (,$(findstring $(git_branch),master HEAD))
+		ifneq (,$(patsubst release-%,,$(git_branch)))
+			VERSION := $(git_branch)
+			version_strategy := branch
+		endif
+	endif
 endif
 
-# CONTAINER_TOOL defines the container tool to be used for building images.
-# Be aware that the target commands are only tested with Docker which is
-# scaffolded by default. However, you might want to replace it to use other
-# tools. (i.e. podman)
-CONTAINER_TOOL ?= docker
+###
+### These variables should not need tweaking.
+###
 
-# Setting SHELL to bash allows bash commands to be executed by recipes.
-# Options are set to exit when a recipe line exits non-zero or a piped command fails.
-SHELL = /usr/bin/env bash -o pipefail
-.SHELLFLAGS = -ec
+SRC_PKGS := apis cmd pkg
+SRC_DIRS := $(SRC_PKGS) # directories which hold app source (not vendored)
 
-.PHONY: all
-all: build
+DOCKER_PLATFORMS := linux/amd64 linux/arm64
+BIN_PLATFORMS    := $(DOCKER_PLATFORMS)
 
-##@ General
+# Used internally.  Users should pass GOOS and/or GOARCH.
+OS   := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
+ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-# The help target prints out all targets with their descriptions organized
-# beneath their categories. The categories are represented by '##@' and the
-# target descriptions by '##'. The awk command is responsible for reading the
-# entire set of makefiles included in this invocation, looking for lines of the
-# file as xyz: ## something, and then pretty-format the target and help. Then,
-# if there's a line with ##@ something, that gets pretty-printed as a category.
-# More info on the usage of ANSI control characters for terminal formatting:
-# https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
-# More info on the awk command:
-# http://linuxcommand.org/lc3_adv_awk.php
+BASEIMAGE_PROD   ?= alpine
+BASEIMAGE_DBG    ?= debian:12
 
-.PHONY: help
-help: ## Display this help.
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+IMAGE            := $(REGISTRY)/$(BIN)
+VERSION_PROD     := $(VERSION)
+VERSION_DBG      := $(VERSION)-dbg
+TAG              := $(VERSION)_$(OS)_$(ARCH)
+TAG_PROD         := $(TAG)
+TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
 
-##@ Development
+GO_VERSION       ?= 1.24
+BUILD_IMAGE      ?= ghcr.io/appscode/golang-dev:$(GO_VERSION)
+CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v3.11.0
 
-.PHONY: manifests
-manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+OUTBIN = bin/$(BIN)-$(OS)-$(ARCH)
+ifeq ($(OS),windows)
+  OUTBIN := bin/$(BIN)-$(OS)-$(ARCH).exe
+  BIN := $(BIN).exe
+endif
 
-.PHONY: generate
-generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+# Directories that we need created to build/test.
+BUILD_DIRS  := bin/$(OS)_$(ARCH)     \
+               .go/bin/$(OS)_$(ARCH) \
+               .go/cache             \
+               hack/config           \
+               $(HOME)/.credentials  \
+               $(HOME)/.kube
 
-.PHONY: fmt
-fmt: ## Run go fmt against code.
-	go fmt ./...
+DOCKERFILE_PROD  = Dockerfile.in
+DOCKERFILE_DBG   = Dockerfile.dbg
 
-.PHONY: vet
-vet: ## Run go vet against code.
-	go vet ./...
+DOCKER_REPO_ROOT := /go/src/$(GO_PKG)/$(REPO)
+
+# If you want to build all binaries, see the 'all-build' rule.
+# If you want to build all containers, see the 'all-container' rule.
+# If you want to build AND push all containers, see the 'all-push' rule.
+all: fmt build
+
+# For the following OS/ARCH expansions, we transform OS/ARCH into OS_ARCH
+# because make pattern rules don't match with embedded '/' characters.
+
+build-%:
+	@$(MAKE) build                        \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+container-%:
+	@$(MAKE) container                    \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+push-%:
+	@$(MAKE) push                         \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+all-build: $(addprefix build-, $(subst /,_, $(BIN_PLATFORMS)))
+ifeq ($(COMPRESS),yes)
+	@cd bin; \
+	sha256sum $(patsubst $(BIN)-windows-%.tar.gz,$(BIN)-windows-%.zip, $(addsuffix .tar.gz, $(addprefix $(BIN)-, $(subst /,-, $(BIN_PLATFORMS))))) > $(BIN)-checksums.txt
+endif
+
+all-container: $(addprefix container-, $(subst /,_, $(DOCKER_PLATFORMS)))
+
+all-push: $(addprefix push-, $(subst /,_, $(DOCKER_PLATFORMS)))
+
+version:
+	@echo version=$(VERSION)
+	@echo version_strategy=$(version_strategy)
+	@echo git_tag=$(git_tag)
+	@echo git_branch=$(git_branch)
+	@echo commit_hash=$(commit_hash)
+	@echo commit_timestamp=$(commit_timestamp)
+
+gen:
+	@true
+
+fmt: $(BUILD_DIRS)
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    /bin/bash -c "                                          \
+	        REPO_PKG=$(GO_PKG)                                  \
+	        ./hack/fmt.sh $(SRC_DIRS)                           \
+	    "
+
+build: $(OUTBIN)
+
+# The following structure defeats Go's (intentional) behavior to always touch
+# result files, even if they have not changed.  This will still run `go` but
+# will not trigger further work if nothing has actually changed.
+
+$(OUTBIN): .go/$(OUTBIN).stamp
+	@true
+
+# This will build the binary under ./.go and update the real binary iff needed.
+.PHONY: .go/$(OUTBIN).stamp
+.go/$(OUTBIN).stamp: $(BUILD_DIRS)
+	@echo "making $(OUTBIN)"
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    /bin/bash -c "                                          \
+	        PRODUCT_OWNER_NAME=$(PRODUCT_OWNER_NAME)            \
+	        PRODUCT_NAME=$(PRODUCT_NAME)                        \
+	        ENFORCE_LICENSE=$(ENFORCE_LICENSE)                  \
+	        ARCH=$(ARCH)                                        \
+	        OS=$(OS)                                            \
+	        VERSION=$(VERSION)                                  \
+	        version_strategy=$(version_strategy)                \
+	        git_branch=$(git_branch)                            \
+	        git_tag=$(git_tag)                                  \
+	        commit_hash=$(commit_hash)                          \
+	        commit_timestamp=$(commit_timestamp)                \
+	        ./hack/build.sh                                     \
+	    "
+	@if ! cmp -s .go/bin/$(OS)_$(ARCH)/$(BIN) $(OUTBIN); then   \
+	    mv .go/bin/$(OS)_$(ARCH)/$(BIN) $(OUTBIN);              \
+	    date >$@;                                               \
+	fi
+ifeq ($(COMPRESS),yes)
+ifeq ($(OS),windows)
+	@echo "compressing $(OUTBIN)";                               \
+	cd bin;                                                      \
+	zip -j $(subst .exe,,$(BIN))-$(OS)-$(ARCH).zip $(subst .exe,,$(BIN))-$(OS)-$(ARCH).exe ../LICENSE
+else
+	@echo "compressing $(OUTBIN)";                               \
+	cd bin;                                                      \
+	tar -czvf $(BIN)-$(OS)-$(ARCH).tar.gz $(BIN)-$(OS)-$(ARCH) ../LICENSE
+endif
+endif
+	@echo
+
+# Used to track state in hidden files.
+DOTFILE_IMAGE    = $(subst /,_,$(IMAGE))-$(TAG)
+
+container: bin/.container-$(DOTFILE_IMAGE)-PROD bin/.container-$(DOTFILE_IMAGE)-DBG
+ifeq (,$(SRC_REG))
+bin/.container-$(DOTFILE_IMAGE)-%: bin/$(BIN)-$(OS)-$(ARCH) $(DOCKERFILE_%)
+	@echo "container: $(IMAGE):$(TAG_$*)"
+	@sed                                    \
+		-e 's|{ARG_BIN}|$(BIN)|g'           \
+		-e 's|{ARG_ARCH}|$(ARCH)|g'         \
+		-e 's|{ARG_OS}|$(OS)|g'             \
+		-e 's|{ARG_FROM}|$(BASEIMAGE_$*)|g' \
+		$(DOCKERFILE_$*) > bin/.dockerfile-$*-$(OS)_$(ARCH)
+	@docker buildx build --platform $(OS)/$(ARCH) --load --pull -t $(IMAGE):$(TAG_$*) -f bin/.dockerfile-$*-$(OS)_$(ARCH) .
+	@docker images -q $(IMAGE):$(TAG_$*) > $@
+	@echo
+else
+bin/.container-$(DOTFILE_IMAGE)-%:
+	@echo "container: $(IMAGE):$(TAG_$*)"
+	@docker tag $(SRC_REG)/$(BIN):$(TAG_$*) $(IMAGE):$(TAG_$*)
+	@echo
+endif
+
+push: bin/.push-$(DOTFILE_IMAGE)-PROD bin/.push-$(DOTFILE_IMAGE)-DBG
+bin/.push-$(DOTFILE_IMAGE)-%: bin/.container-$(DOTFILE_IMAGE)-%
+	@docker push $(IMAGE):$(TAG_$*)
+	@echo "pushed: $(IMAGE):$(TAG_$*)"
+	@echo
+
+.PHONY: docker-manifest
+docker-manifest: docker-manifest-PROD docker-manifest-DBG
+docker-manifest-%:
+	docker manifest create -a $(IMAGE):$(VERSION_$*) $(foreach PLATFORM,$(DOCKER_PLATFORMS),$(IMAGE):$(VERSION_$*)_$(subst /,_,$(PLATFORM)))
+	docker manifest push $(IMAGE):$(VERSION_$*)
 
 .PHONY: test
-test: manifests generate fmt vet setup-envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test $$(go list ./... | grep -v /e2e) -coverprofile cover.out
+test: unit-tests
 
-# TODO(user): To use a different vendor for e2e tests, modify the setup under 'tests/e2e'.
-# The default setup assumes Kind is pre-installed and builds/loads the Manager Docker image locally.
-# CertManager is installed by default; skip with:
-# - CERT_MANAGER_INSTALL_SKIP=true
-.PHONY: test-e2e
-test-e2e: manifests generate fmt vet ## Run the e2e tests. Expected an isolated environment using Kind.
-	@command -v $(KIND) >/dev/null 2>&1 || { \
-		echo "Kind is not installed. Please install Kind manually."; \
-		exit 1; \
-	}
-	@$(KIND) get clusters | grep -q 'kind' || { \
-		echo "No Kind cluster is running. Please start a Kind cluster before running the e2e tests."; \
-		exit 1; \
-	}
-	go test ./test/e2e/ -v -ginkgo.v
+unit-tests: $(BUILD_DIRS)
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    /bin/bash -c "                                          \
+	        ARCH=$(ARCH)                                        \
+	        OS=$(OS)                                            \
+	        VERSION=$(VERSION)                                  \
+	        ./hack/test.sh $(SRC_PKGS)                          \
+	    "
+
+ADDTL_LINTERS   := gofmt,goimports,unparam
 
 .PHONY: lint
-lint: golangci-lint ## Run golangci-lint linter
-	$(GOLANGCI_LINT) run
+lint: $(BUILD_DIRS)
+	@echo "running linter"
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    --env GOFLAGS="-mod=vendor"                             \
+	    $(BUILD_IMAGE)                                          \
+	    golangci-lint run --enable $(ADDTL_LINTERS) --max-same-issues=100 --timeout=10m --exclude-files="generated.*\.go$\" --exclude-dirs-use-default --exclude-dirs=client,vendor
 
-.PHONY: lint-fix
-lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
-	$(GOLANGCI_LINT) run --fix
+$(BUILD_DIRS):
+	@mkdir -p $@
 
-.PHONY: lint-config
-lint-config: golangci-lint ## Verify golangci-lint linter configuration
-	$(GOLANGCI_LINT) config verify
+KUBE_NAMESPACE    ?= kubeops
+REGISTRY_SECRET   ?=
+IMAGE_PULL_POLICY	?= IfNotPresent
 
-##@ Build
-
-.PHONY: build
-build: manifests generate fmt vet ## Build manager binary.
-	go build -o bin/manager cmd/main.go
-
-.PHONY: run
-run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./cmd/main.go
-
-# If you wish to build the manager image targeting other platforms you can use the --platform flag.
-# (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.
-# More info: https://docs.docker.com/develop/develop-images/build_enhancements/
-.PHONY: docker-build
-docker-build: ## Build docker image with the manager.
-	$(CONTAINER_TOOL) build -t ${IMG} .
-
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	$(CONTAINER_TOOL) push ${IMG}
-
-# PLATFORMS defines the target platforms for the manager image be built to provide support to multiple
-# architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
-# - be able to use docker buildx. More info: https://docs.docker.com/build/buildx/
-# - have enabled BuildKit. More info: https://docs.docker.com/develop/develop-images/build_enhancements/
-# - be able to push the image to your registry (i.e. if you do not set a valid value via IMG=<myregistry/image:<tag>> then the export will fail)
-# To adequately provide solutions that are compatible with multiple platforms, you should consider using this option.
-PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
-.PHONY: docker-buildx
-docker-buildx: ## Build and push docker image for the manager for cross-platform support
-	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
-	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
-	- $(CONTAINER_TOOL) buildx create --name taskqueue-builder
-	$(CONTAINER_TOOL) buildx use taskqueue-builder
-	- $(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${IMG} -f Dockerfile.cross .
-	- $(CONTAINER_TOOL) buildx rm taskqueue-builder
-	rm Dockerfile.cross
-
-.PHONY: build-installer
-build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
-	mkdir -p dist
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default > dist/install.yaml
-
-##@ Deployment
-
-ifndef ignore-not-found
-  ignore-not-found = false
+ifeq ($(strip $(REGISTRY_SECRET)),)
+	IMAGE_PULL_SECRETS =
+else
+	IMAGE_PULL_SECRETS = --set imagePullSecrets[0].name=$(REGISTRY_SECRET)
 endif
 
 .PHONY: install
-install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | $(KUBECTL) apply -f -
+install:
+	@cd ../installer; \
+	kubectl create ns $(KUBE_NAMESPACE) || true; \
+	helm upgrade -i taskqueue charts/taskqueue --wait \
+		--namespace=$(KUBE_NAMESPACE) --create-namespace \
+		--set image.tag=$(TAG_PROD) \
+		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
+		$(IMAGE_PULL_SECRETS);
 
 .PHONY: uninstall
-uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
+uninstall:
+	@cd ../installer; \
+	helm uninstall taskqueue --namespace=$(KUBE_NAMESPACE) || true
 
-.PHONY: deploy
-deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
+.PHONY: purge
+purge: uninstall
+	@true
 
-.PHONY: undeploy
-undeploy: kustomize ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/default | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
+.PHONY: dev
+dev: gen fmt push
 
-##@ Dependencies
+.PHONY: verify
+verify: verify-gen verify-modules
+
+.PHONY: verify-modules
+verify-modules:
+	go mod tidy
+	go mod vendor
+	@if !(git diff --exit-code HEAD); then \
+		echo "go module files are out of date"; exit 1; \
+	fi
+
+.PHONY: verify-gen
+verify-gen: gen fmt
+	@if !(git diff --exit-code HEAD); then \
+		echo "generated files are out of date, run make gen fmt"; exit 1; \
+	fi
+
+.PHONY: add-license
+add-license:
+	@echo "Adding license header"
+	@docker run --rm 	                                 \
+		-u $$(id -u):$$(id -g)                           \
+		-v /tmp:/.cache                                  \
+		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
+		-w $(DOCKER_REPO_ROOT)                           \
+		--env HTTP_PROXY=$(HTTP_PROXY)                   \
+		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
+		$(BUILD_IMAGE)                                   \
+		ltag -t "./hack/license" --excludes "vendor contrib bin" -v
+
+.PHONY: check-license
+check-license:
+	@echo "Checking files have proper license header"
+	@docker run --rm 	                                 \
+		-u $$(id -u):$$(id -g)                           \
+		-v /tmp:/.cache                                  \
+		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
+		-w $(DOCKER_REPO_ROOT)                           \
+		--env HTTP_PROXY=$(HTTP_PROXY)                   \
+		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
+		$(BUILD_IMAGE)                                   \
+		ltag -t "./hack/license" --excludes "vendor contrib bin" --check -v
+
+.PHONY: ci
+ci: verify check-license lint build # unit-tests cover
+
+.PHONY: qa
+qa:
+	@if [ "$$APPSCODE_ENV" = "prod" ]; then                                              \
+		echo "Nothing to do in prod env. Are you trying to 'release' binaries to prod?"; \
+		exit 1;                                                                          \
+	fi
+	@if [ "$(version_strategy)" = "tag" ]; then               \
+		echo "Are you trying to 'release' binaries to prod?"; \
+		exit 1;                                               \
+	fi
+	@$(MAKE) clean all-build all-push docker-manifest --no-print-directory
+
+.PHONY: release
+release:
+	@if [ "$$APPSCODE_ENV" != "prod" ]; then      \
+		echo "'release' only works in PROD env."; \
+		exit 1;                                   \
+	fi
+	@if [ "$(version_strategy)" != "tag" ]; then                    \
+		echo "apply tag to release binaries and/or docker images."; \
+		exit 1;                                                     \
+	fi
+	@$(MAKE) clean all-build all-push docker-manifest --no-print-directory
+
+
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
-## Tool Binaries
-KUBECTL ?= kubectl
-KIND ?= kind
-KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
-ENVTEST ?= $(LOCALBIN)/setup-envtest
-GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 
-## Tool Versions
-KUSTOMIZE_VERSION ?= v5.6.0
-CONTROLLER_TOOLS_VERSION ?= v0.17.2
-#ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
-ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}')
-#ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)
-ENVTEST_K8S_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "1.%d", $$3}')
-GOLANGCI_LINT_VERSION ?= v1.63.4
 
-.PHONY: kustomize
-kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
-$(KUSTOMIZE): $(LOCALBIN)
-	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5,$(KUSTOMIZE_VERSION))
+.PHONY: label-crds
+label-crds:
+	@for f in crds/*.yaml; do \
+		echo "applying app.kubernetes.io/name=taskqueue label to $$f"; \
+		kubectl label --overwrite -f $$f --local=true -o yaml app.kubernetes.io/name=taskqueue > bin/crd.yaml; \
+		mv bin/crd.yaml $$f; \
+	done
+	@echo ""
+
+
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
 $(CONTROLLER_GEN): $(LOCALBIN)
-	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen,$(CONTROLLER_TOOLS_VERSION))
+	$(call go-forked-tool,$(CONTROLLER_GEN),https://github.com/kmodules/controller-tools,$(CONTROLLER_TOOLS_VERSION))
 
-.PHONY: setup-envtest
-setup-envtest: envtest ## Download the binaries required for ENVTEST in the local bin directory.
-	@echo "Setting up envtest binaries for Kubernetes version $(ENVTEST_K8S_VERSION)..."
-	@$(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path || { \
-		echo "Error: Failed to set up envtest binaries for version $(ENVTEST_K8S_VERSION)."; \
-		exit 1; \
-	}
 
-.PHONY: envtest
-envtest: $(ENVTEST) ## Download setup-envtest locally if necessary.
-$(ENVTEST): $(LOCALBIN)
-	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest,$(ENVTEST_VERSION))
 
-.PHONY: golangci-lint
-golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
-$(GOLANGCI_LINT): $(LOCALBIN)
-	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
+.PHONY: manifests
+manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:allowDangerousTypes=true,maxDescLen=0 paths="./..." output:crd:artifacts:config=crds
+	@$(MAKE) label-crds --no-print-directory
 
-# go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
-# $1 - target path with name of binary
-# $2 - package url which can be installed
-# $3 - specific version of package
-define go-install-tool
-@[ -f "$(1)-$(3)" ] || { \
-set -e; \
-package=$(2)@$(3) ;\
-echo "Downloading $${package}" ;\
-rm -f $(1) || true ;\
-GOBIN=$(LOCALBIN) go install $${package} ;\
-mv $(1) $(1)-$(3) ;\
-} ;\
-ln -sf $(1)-$(3) $(1)
-endef
+
+.PHONY: generate
+generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+	$(CONTROLLER_GEN) object:headerFile="hack/license/go.txt" paths="./..."
+
+
+
+.PHONY: clean
+clean:
+	rm -rf .go bin
+
+.PHONY: push-to-kind
+push-to-kind: container
+	@echo "Loading docker image into kind cluster...."
+	@kind load docker-image $(IMAGE):$(TAG_PROD)
+	@echo "Image has been pushed successfully into kind cluster."
+
+.PHONY: deploy-to-kind
+deploy-to-kind: push-to-kind install
+
+.PHONY: deploy
+deploy: uninstall push install
