@@ -17,6 +17,6 @@ limitations under the License.
 package batch
 
 const (
-	taskQueueFinalizer = "batch.kubeops.dev/finalizer"
+	taskQueueFinalizer = "batch.k8s.appscode.com/finalizer"
 	keySeparator       = "/"
 )

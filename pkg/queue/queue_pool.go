@@ -36,7 +36,7 @@ func NewSharedQueuePool() *SharedQueuePool {
 
 // Group 1: Top-level operations (MapOfQueues + globalMu)
 
-func (pool *SharedQueuePool) WithMutexLock(fn func()) {
+func (pool *SharedQueuePool) ExecuteFunc(fn func()) {
 	pool.globalMu.Lock()
 	defer pool.globalMu.Unlock()
 	fn()

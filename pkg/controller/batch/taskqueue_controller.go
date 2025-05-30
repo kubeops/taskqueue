@@ -116,7 +116,7 @@ func (r *TaskQueueReconciler) handleDeletion(ctx context.Context, logger logr.Lo
 
 func (r *TaskQueueReconciler) startWatchingResource(ctx context.Context, gvr schema.GroupVersionResource) {
 	var shouldStart bool = true
-	if r.QueuePool.WithMutexLock(func() {
+	if r.QueuePool.ExecuteFunc(func() {
 		if _, exist := r.MapOfWatchResources[gvr]; exist {
 			shouldStart = false
 		}
@@ -248,13 +248,13 @@ func (r *TaskQueueReconciler) evaluateObjectPhase(obj *unstructured.Unstructured
 }
 
 func (r *TaskQueueReconciler) deleteKeyFromTasksPhase(tq *queueapi.TaskQueue, key string) {
-	r.QueuePool.WithMutexLock(func() {
+	r.QueuePool.ExecuteFunc(func() {
 		delete(tq.Status.TriggeredTasksPhase, key)
 	})
 }
 
 func (r *TaskQueueReconciler) updateTasksPhase(tq *queueapi.TaskQueue, key string, phase queueapi.TaskPhase) {
-	r.QueuePool.WithMutexLock(func() {
+	r.QueuePool.ExecuteFunc(func() {
 		tq.Status.TriggeredTasksPhase[key] = phase
 	})
 }
