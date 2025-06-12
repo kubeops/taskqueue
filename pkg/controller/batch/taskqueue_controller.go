@@ -273,12 +273,12 @@ func (r *TaskQueueReconciler) processPendingTasks(ctx context.Context, logger lo
 		if err != nil {
 			return client.IgnoreNotFound(err)
 		}
-		if err = r.createTasksObject(ctx, tq, pt); err != nil {
-			return fmt.Errorf("failed to create pendingTasks object: %w", err)
-		}
 		gvr, err := getGVR(r.DiscoveryClient, pt.Spec.TaskType)
 		if err != nil {
 			return fmt.Errorf("failed to get GVR: %w", err)
+		}
+		if err = r.createTasksObject(ctx, gvr.GroupVersion().String(), tq, pt); err != nil {
+			return fmt.Errorf("failed to create pendingTasks object: %w", err)
 		}
 		r.startWatchingResource(ctx, gvr)
 	}
@@ -305,11 +305,13 @@ func (r *TaskQueueReconciler) syncWatchingResourceOnce(ctx context.Context, logg
 	return utilerrors.NewAggregate(errs)
 }
 
-func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, tq *queueapi.TaskQueue, pt *queueapi.PendingTask) error {
+func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion string, tq *queueapi.TaskQueue, pt *queueapi.PendingTask) error {
 	var obj unstructured.Unstructured
 	if err := json.Unmarshal(pt.Spec.Resource.Raw, &obj.Object); err != nil {
 		return fmt.Errorf("failed to unmarshal task resource: %w", err)
 	}
+	obj.SetKind(pt.Spec.TaskType.Kind)
+	obj.SetAPIVersion(grpVersion)
 	if _, err := cu.CreateOrPatch(ctx, r.Client, &obj,
 		func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*unstructured.Unstructured)

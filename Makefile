@@ -42,7 +42,8 @@ CODE_GENERATOR_IMAGE ?= ghcr.io/appscode/gengo:release-1.32
 API_GROUPS           ?= batch:v1alpha1
 
 # Where to push the docker image.
-REGISTRY ?= ghcr.io/appscode
+FQDN  ?= ghcr.io
+REGISTRY ?= appscode
 SRC_REG  ?=
 
 # This version-strategy uses git tags to set the version string
@@ -82,7 +83,7 @@ ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 BASEIMAGE_PROD   ?= alpine
 BASEIMAGE_DBG    ?= debian:12
 
-IMAGE            := $(REGISTRY)/$(BIN)
+IMAGE            := $(if $(FQDN),$(FQDN)/,)$(REGISTRY)/$(BIN)
 VERSION_PROD     := $(VERSION)
 VERSION_DBG      := $(VERSION)-dbg
 TAG              := $(VERSION)_$(OS)_$(ARCH)
@@ -330,6 +331,8 @@ install:
 	kubectl create ns $(KUBE_NAMESPACE) || true; \
 	helm upgrade -i taskqueue charts/taskqueue --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
+		--set registryFQDN=$(FQDN) \
+		--set image.registry=$(REGISTRY) \
 		--set image.tag=$(TAG_PROD) \
 		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
 		$(IMAGE_PULL_SECRETS);
