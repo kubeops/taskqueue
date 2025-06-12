@@ -15,7 +15,7 @@ resources:
   domain: k8s.appscode.com
   group: batch
   kind: TaskQueue
-  path: kubeops.dev/taskqueue/api/batch/v1alpha1
+  path: kubeops.dev/taskqueue/apis/batch/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -23,13 +23,6 @@ resources:
   domain: k8s.appscode.com
   group: batch
   kind: PendingTask
-  path: kubeops.dev/taskqueue/api/batch/v1alpha1
-  version: v1alpha1
-- api:
-    crdVersion: v1
-  domain: k8s.appscode.com
-  group: ops.batch
-  kind: TaskTrigger
-  path: kubeops.dev/taskqueue/api/ops/v1alpha1
+  path: kubeops.dev/taskqueue/apis/batch/v1alpha1
   version: v1alpha1
 version: "3"
