@@ -74,20 +74,22 @@ func (r *TaskQueueReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, fmt.Errorf("failed to ensure finalizer: %w", err)
 	}
 
-	if err := r.syncTaskQueueStatus(ctx, tq, func(key string) bool {
-		return true
-	}); err != nil {
+	needsRequeue, err := r.syncTaskQueueStatus(ctx, tq, func(key string) bool { return true })
+	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("failed to sync task statuses: %w", err)
 	}
 
-	if err := r.processPendingTasks(ctx, logger, tq); err != nil {
-		return ctrl.Result{}, fmt.Errorf("process pending: %w", err)
+	if !needsRequeue {
+		if err := r.processPendingTasks(ctx, logger, tq); err != nil {
+			return ctrl.Result{}, fmt.Errorf("process pending: %w", err)
+		}
 	}
 
 	if err := r.updateStatus(ctx, tq); err != nil {
 		return ctrl.Result{}, fmt.Errorf("failed to update status: %w", err)
 	}
-	return ctrl.Result{}, nil
+
+	return ctrl.Result{Requeue: needsRequeue}, nil
 }
 
 func (r *TaskQueueReconciler) getTaskQueue(ctx context.Context, namespace, name string) (*queueapi.TaskQueue, error) {
@@ -154,7 +156,7 @@ func (r *TaskQueueReconciler) handleResourcesUpdate(ctx context.Context, obj int
 	if tq == nil {
 		return nil
 	}
-	if err := r.syncTaskQueueStatus(ctx, tq, func(key string) bool {
+	if _, err := r.syncTaskQueueStatus(ctx, tq, func(key string) bool {
 		return strings.HasSuffix(key, newObj.GetName())
 	}); err != nil {
 		return fmt.Errorf("failed to sync task status: %w", err)
@@ -193,40 +195,47 @@ func (r *TaskQueueReconciler) ensureFinalizer(ctx context.Context, logger logr.L
 	return nil
 }
 
-func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queueapi.TaskQueue, keyFilter func(key string) bool) error {
-	if tq.Status.TriggeredTasksPhase == nil {
-		tq.Status.TriggeredTasksPhase = make(map[string]queueapi.TaskPhase)
+func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queueapi.TaskQueue, keyFilter func(key string) bool) (bool, error) {
+	if tq.Status.TriggeredTasksStatus == nil {
+		tq.Status.TriggeredTasksStatus = make(map[string]map[string]queueapi.TaskPhase)
 	}
 	var errs []error
-	for key := range tq.Status.TriggeredTasksPhase {
-		if !keyFilter(key) {
-			continue
+	var shouldRequeue bool
+	for typRef, statusMap := range tq.Status.TriggeredTasksStatus {
+		gvk := parseTypeRefKey(typRef)
+		if tq.Status.TriggeredTasksStatus[typRef] == nil {
+			tq.Status.TriggeredTasksStatus[typRef] = make(map[string]queueapi.TaskPhase)
 		}
-		gvk, ns, name := parseStatusKey(key)
-		obj, err := getObject(ctx, r.Client, gvk, types.NamespacedName{Namespace: ns, Name: name})
-		if err != nil {
-			if errors.IsNotFound(err) {
-				r.deleteKeyFromTasksPhase(tq, key)
+		for statusKey := range statusMap {
+			if !keyFilter(statusKey) {
 				continue
 			}
-			errs = append(errs, err)
-			continue
-		}
+			namespacedName := parseStatusKey(statusKey)
+			obj, err := getObject(ctx, r.Client, gvk, namespacedName)
+			if err != nil {
+				if errors.IsNotFound(err) {
+					r.deleteKeyFromTasksPhase(tq, typRef, statusKey)
+					continue
+				}
+				errs = append(errs, err)
+				continue
+			}
 
-		shouldKeep, phase, err := r.evaluateObjectPhase(obj, tq)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		if !shouldKeep {
-			r.deleteKeyFromTasksPhase(tq, key)
-		} else if phase != "" {
-			r.updateTasksPhase(tq, key, phase)
+			shouldKeep, phase, err := r.evaluateObjectPhase(obj, tq)
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+			if !shouldKeep {
+				shouldRequeue = true
+				r.deleteKeyFromTasksPhase(tq, typRef, statusKey)
+			} else if phase != "" {
+				shouldRequeue = true
+				r.updateTasksPhase(tq, typRef, statusKey, phase)
+			}
 		}
 	}
-
-	return utilerrors.NewAggregate(errs)
+	return shouldRequeue, utilerrors.NewAggregate(errs)
 }
 
 func (r *TaskQueueReconciler) evaluateObjectPhase(obj *unstructured.Unstructured, tq *queueapi.TaskQueue) (bool, queueapi.TaskPhase, error) {
@@ -247,15 +256,15 @@ func (r *TaskQueueReconciler) evaluateObjectPhase(obj *unstructured.Unstructured
 	return true, "", nil
 }
 
-func (r *TaskQueueReconciler) deleteKeyFromTasksPhase(tq *queueapi.TaskQueue, key string) {
+func (r *TaskQueueReconciler) deleteKeyFromTasksPhase(tq *queueapi.TaskQueue, typeRefKey string, statusKey string) {
 	r.QueuePool.ExecuteFunc(func() {
-		delete(tq.Status.TriggeredTasksPhase, key)
+		delete(tq.Status.TriggeredTasksStatus[typeRefKey], statusKey)
 	})
 }
 
-func (r *TaskQueueReconciler) updateTasksPhase(tq *queueapi.TaskQueue, key string, phase queueapi.TaskPhase) {
+func (r *TaskQueueReconciler) updateTasksPhase(tq *queueapi.TaskQueue, gvk string, key string, phase queueapi.TaskPhase) {
 	r.QueuePool.ExecuteFunc(func() {
-		tq.Status.TriggeredTasksPhase[key] = phase
+		tq.Status.TriggeredTasksStatus[gvk][key] = phase
 	})
 }
 
@@ -289,8 +298,8 @@ func (r *TaskQueueReconciler) syncWatchingResourceOnce(ctx context.Context, logg
 	var errs []error
 	r.once.Do(func() {
 		logger.Info("Syncing watching resources for TaskQueue", "taskQueue", tq.Name)
-		for key := range tq.Status.TriggeredTasksPhase {
-			gvk, _, _ := parseStatusKey(key)
+		for typeRef := range tq.Status.TriggeredTasksStatus {
+			gvk := parseTypeRefKey(typeRef)
 			gvr, err := getGVR(r.DiscoveryClient, queueapi.TypedResourceReference{
 				APIGroup: gvk.Group,
 				Kind:     gvk.Kind,
@@ -320,7 +329,11 @@ func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion 
 	); err != nil {
 		return fmt.Errorf("failed to create or patch task: %w", err)
 	}
-	r.updateTasksPhase(tq, getKeyFromObj(&obj), queueapi.TaskPhaseInPending)
+	typeRef := getGVKFromObj(obj)
+	if tq.Status.TriggeredTasksStatus[typeRef] == nil {
+		tq.Status.TriggeredTasksStatus[typeRef] = make(map[string]queueapi.TaskPhase)
+	}
+	r.updateTasksPhase(tq, typeRef, getKeyFromObj(obj), queueapi.TaskPhaseInPending)
 	if err := r.Delete(ctx, pt); err != nil {
 		return fmt.Errorf("failed to delete task object: %w", err)
 	}
@@ -352,9 +365,12 @@ func (r *TaskQueueReconciler) getRuleSetFromTaskQueue(obj *unstructured.Unstruct
 
 func (r *TaskQueueReconciler) getInProgressTaskCount(tq *queueapi.TaskQueue) int {
 	count := 0
-	for _, phase := range tq.Status.TriggeredTasksPhase {
-		if phase == queueapi.TaskPhaseInProgress || phase == queueapi.TaskPhaseInPending {
-			count++
+	for _, statusMap := range tq.Status.TriggeredTasksStatus {
+		for _, phase := range statusMap {
+			if phase == queueapi.TaskPhaseInProgress ||
+				phase == queueapi.TaskPhaseInPending {
+				count++
+			}
 		}
 	}
 	return count

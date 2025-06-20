@@ -78,31 +78,42 @@ func evalCEL(obj *unstructured.Unstructured, expr string) (bool, error) {
 	return result, nil
 }
 
-func getKeyFromObj(u *unstructured.Unstructured) string {
-	g := u.GroupVersionKind().Group
-	if g == "" {
-		g = "_"
-	}
-	n := u.GetNamespace()
-	if n == "" {
-		n = "_"
-	}
-	gvk := u.GroupVersionKind()
-	return fmt.Sprintf("%s/%s/%s/%s/%s", g, gvk.Version, gvk.Kind, n, u.GetName())
+func getKeyFromObj(u unstructured.Unstructured) string {
+	ns := u.GetNamespace()
+	return fmt.Sprintf("%s/%s", ns, u.GetName())
 }
 
-func parseStatusKey(key string) (schema.GroupVersionKind, string, string) {
+func getGVKFromObj(u unstructured.Unstructured) string {
+	group := u.GroupVersionKind().Group
+	version := u.GroupVersionKind().Version
+	kind := u.GroupVersionKind().Kind
+	if version == "" {
+		version = "_"
+	}
+	return fmt.Sprintf("%s/%s/%s", group, version, kind)
+}
+
+func parseTypeRefKey(key string) schema.GroupVersionKind {
 	parts := strings.Split(key, keySeparator)
-	if len(parts) != 5 {
-		return schema.GroupVersionKind{}, "", ""
+	if parts[1] == "_" {
+		parts[1] = ""
 	}
 	return schema.GroupVersionKind{
-			Group:   parts[0],
-			Version: parts[1],
-			Kind:    parts[2],
-		},
-		parts[3],
-		parts[4]
+		Group:   parts[0],
+		Version: parts[1],
+		Kind:    parts[2],
+	}
+}
+
+func parseStatusKey(key string) types.NamespacedName {
+	parts := strings.Split(key, keySeparator)
+	if parts[0] == "_" {
+		parts[0] = ""
+	}
+	return types.NamespacedName{
+		Namespace: parts[0],
+		Name:      parts[1],
+	}
 }
 
 func getObject(ctx context.Context, client runtime_client.Client, gvk schema.GroupVersionKind,

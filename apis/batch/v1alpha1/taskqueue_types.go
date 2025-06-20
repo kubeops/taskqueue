@@ -92,7 +92,7 @@ type ObjectPhaseRules struct {
 type TaskQueueStatus struct {
 	// TriggeredTasksPhase contains the status of the triggered tasks.
 	// +optional
-	TriggeredTasksPhase map[string]TaskPhase `json:"triggeredTasksPhase,omitempty"`
+	TriggeredTasksStatus map[string]map[string]TaskPhase `json:"triggeredTasksStatus,omitempty"`
 }
 type UnitTask struct {
 	Type TypedResourceReference `json:"type,omitempty"`

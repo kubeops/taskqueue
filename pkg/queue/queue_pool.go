@@ -24,13 +24,15 @@ import (
 
 type SharedQueuePool struct {
 	MapOfQueues map[string]*workqueue.Typed[string]
-	locks       sync.Map
-	globalMu    sync.RWMutex
+	locks       *sync.Map
+	globalMu    *sync.RWMutex
 }
 
 func NewSharedQueuePool() *SharedQueuePool {
 	return &SharedQueuePool{
 		MapOfQueues: make(map[string]*workqueue.Typed[string]),
+		locks:       new(sync.Map),
+		globalMu:    new(sync.RWMutex),
 	}
 }
 

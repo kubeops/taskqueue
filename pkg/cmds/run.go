@@ -29,19 +29,17 @@ import (
 	queue "kubeops.dev/taskqueue/pkg/queue"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
-
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
-	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
@@ -166,20 +164,33 @@ func NewCmdRun() *cobra.Command {
 				os.Exit(1)
 			}
 			mapOfWatchResources := make(map[schema.GroupVersionResource]struct{})
-			dynClient, err := dynamic.NewForConfig(mgr.GetConfig())
+			cfg := mgr.GetConfig()
+			cfg.QPS = 50000
+			cfg.Burst = 50000
+			dynClient, err := dynamic.NewForConfig(cfg)
 			if err != nil {
 				setupLog.Error(err, "unable to initialize dynamic client")
 				os.Exit(1)
 			}
-			discoveryClient, err := discovery.NewDiscoveryClientForConfig(mgr.GetConfig())
+			discoveryClient, err := discovery.NewDiscoveryClientForConfig(cfg)
 			if err != nil {
 				setupLog.Error(err, "unable to initialize discovery client")
 				os.Exit(1)
 			}
 
+			uncachedClient, err := client.New(mgr.GetConfig(), client.Options{
+				Scheme: mgr.GetScheme(),
+				Mapper: mgr.GetRESTMapper(),
+				Cache:  nil,
+			})
+			if err != nil {
+				setupLog.Error(err, "unable to create uncached client")
+				os.Exit(1)
+			}
+
 			newQueuePool := queue.NewSharedQueuePool()
 			if err = (&batchcontroller.TaskQueueReconciler{
-				Client:                 mgr.GetClient(),
+				Client:                 uncachedClient,
 				Scheme:                 mgr.GetScheme(),
 				MapOfWatchResources:    mapOfWatchResources,
 				QueuePool:              newQueuePool,

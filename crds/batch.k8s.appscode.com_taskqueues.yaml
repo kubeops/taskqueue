@@ -63,9 +63,11 @@ spec:
             type: object
           status:
             properties:
-              triggeredTasksPhase:
+              triggeredTasksStatus:
                 additionalProperties:
-                  type: string
+                  additionalProperties:
+                    type: string
+                  type: object
                 type: object
             type: object
         type: object
