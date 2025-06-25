@@ -43,7 +43,7 @@ var _ = Describe("pendingTask Controller", func() {
 
 		BeforeEach(func() {
 			By("creating the custom resource for the Kind pendingTask")
-			err := k8sClient.Get(ctx, typeNamespacedName, pendingtask)
+			err := kbClient.Get(ctx, typeNamespacedName, pendingtask)
 			if err != nil && errors.IsNotFound(err) {
 				resource := &queueapi.PendingTask{
 					ObjectMeta: metav1.ObjectMeta{
@@ -52,24 +52,24 @@ var _ = Describe("pendingTask Controller", func() {
 					},
 					// TODO(user): Specify other spec details if needed.
 				}
-				Expect(k8sClient.Create(ctx, resource)).To(Succeed())
+				Expect(kbClient.Create(ctx, resource)).To(Succeed())
 			}
 		})
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
 			resource := &queueapi.PendingTask{}
-			err := k8sClient.Get(ctx, typeNamespacedName, resource)
+			err := kbClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Cleanup the specific resource instance pendingTask")
-			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
+			Expect(kbClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
 			controllerReconciler := &PendingTaskReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
+				Client: kbClient,
+				Scheme: kbClient.Scheme(),
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{

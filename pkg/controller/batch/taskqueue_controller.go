@@ -28,6 +28,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -175,7 +176,7 @@ func (r *TaskQueueReconciler) findMatchingTaskQueue(ctx context.Context, obj *un
 	}
 	for _, tq := range taskQueueList.Items {
 		for _, task := range tq.Spec.Tasks {
-			if task.Type.Kind == obj.GetKind() && task.Type.APIGroup == obj.GroupVersionKind().Group {
+			if task.Type.Kind == obj.GetKind() && task.Type.Group == obj.GroupVersionKind().Group {
 				return tq.Name, nil
 			}
 		}
@@ -202,7 +203,7 @@ func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queue
 	var errs []error
 	var shouldRequeue bool
 	for typRef, statusMap := range tq.Status.TriggeredTasksStatus {
-		gvk := parseTypeRefKey(typRef)
+		gvk := parseGVKFromKey(typRef)
 		if tq.Status.TriggeredTasksStatus[typRef] == nil {
 			tq.Status.TriggeredTasksStatus[typRef] = make(map[string]queueapi.TaskPhase)
 		}
@@ -210,8 +211,11 @@ func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queue
 			if !keyFilter(statusKey) {
 				continue
 			}
-			namespacedName := parseStatusKey(statusKey)
-			obj, err := getObject(ctx, r.Client, gvk, namespacedName)
+			ns, name, err := cache.SplitMetaNamespaceKey(statusKey)
+			if err != nil {
+				errs = append(errs, err)
+			}
+			obj, err := getObject(ctx, r.Client, schema.GroupVersionKind(gvk), types.NamespacedName{Namespace: ns, Name: name})
 			if err != nil {
 				if errors.IsNotFound(err) {
 					r.deleteKeyFromTasksPhase(tq, typRef, statusKey)
@@ -299,11 +303,8 @@ func (r *TaskQueueReconciler) syncWatchingResourceOnce(ctx context.Context, logg
 	r.once.Do(func() {
 		logger.Info("Syncing watching resources for TaskQueue", "taskQueue", tq.Name)
 		for typeRef := range tq.Status.TriggeredTasksStatus {
-			gvk := parseTypeRefKey(typeRef)
-			gvr, err := getGVR(r.DiscoveryClient, queueapi.TypedResourceReference{
-				APIGroup: gvk.Group,
-				Kind:     gvk.Kind,
-			})
+			gvk := parseGVKFromKey(typeRef)
+			gvr, err := getGVR(r.DiscoveryClient, metav1.GroupKind{Group: gvk.Group, Kind: gvk.Kind})
 			if err != nil {
 				errs = append(errs, fmt.Errorf("failed to get GVR: %w", err))
 				return
@@ -333,7 +334,11 @@ func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion 
 	if tq.Status.TriggeredTasksStatus[typeRef] == nil {
 		tq.Status.TriggeredTasksStatus[typeRef] = make(map[string]queueapi.TaskPhase)
 	}
-	r.updateTasksPhase(tq, typeRef, getKeyFromObj(obj), queueapi.TaskPhaseInPending)
+	key, err := cache.MetaNamespaceKeyFunc(obj)
+	if err != nil {
+		return err
+	}
+	r.updateTasksPhase(tq, typeRef, key, queueapi.TaskPhaseInPending)
 	if err := r.Delete(ctx, pt); err != nil {
 		return fmt.Errorf("failed to delete task object: %w", err)
 	}
@@ -356,7 +361,7 @@ func (r *TaskQueueReconciler) updateStatus(ctx context.Context, tq *queueapi.Tas
 
 func (r *TaskQueueReconciler) getRuleSetFromTaskQueue(obj *unstructured.Unstructured, tq *queueapi.TaskQueue) queueapi.ObjectPhaseRules {
 	for _, task := range tq.Spec.Tasks {
-		if task.Type.Kind == obj.GetKind() && task.Type.APIGroup == obj.GroupVersionKind().Group {
+		if task.Type.Kind == obj.GetKind() && task.Type.Group == obj.GroupVersionKind().Group {
 			return task.Rules
 		}
 	}

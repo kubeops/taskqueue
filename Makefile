@@ -422,7 +422,8 @@ release:
 
 
 ## Location to install dependencies to
-LOCALBIN ?= $(shell pwd)/bin
+#LOCALBIN ?= $(shell pwd)/bin
+LOCALBIN ?= /home/arnob/go/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 

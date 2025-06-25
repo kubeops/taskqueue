@@ -38,7 +38,7 @@ type PendingTask struct {
 // PendingTaskSpec defines the desired state of PendingTask.
 type PendingTaskSpec struct {
 	// TaskType identifies the resource type that the taskQueue is responsible for triggering.
-	TaskType TypedResourceReference `json:"taskType,omitempty"`
+	TaskType metav1.GroupKind `json:"taskType,omitempty"`
 
 	// Resource contains the raw YAML/JSON representation of the Kubernetes resource
 	// to be triggered by the task queue.

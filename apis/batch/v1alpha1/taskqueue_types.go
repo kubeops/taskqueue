@@ -95,7 +95,7 @@ type TaskQueueStatus struct {
 	TriggeredTasksStatus map[string]map[string]TaskPhase `json:"triggeredTasksStatus,omitempty"`
 }
 type UnitTask struct {
-	Type TypedResourceReference `json:"type,omitempty"`
+	Type metav1.GroupKind `json:"type,omitempty"`
 	// Rules defines ObjectPhaseRules. It contains three identification rules of successful phase of the object,
 	// progressing phase of the object & failed phase of the object.
 	// Example:
@@ -104,10 +104,6 @@ type UnitTask struct {
 	//   inProgress: `has(self.status.phase) && self.status.phase == 'Progressing'`
 	//   failed:     `has(self.status.phase) && self.status.phase == 'Failed'`
 	Rules ObjectPhaseRules `json:"rules"`
-}
-type TypedResourceReference struct {
-	Kind     string `json:"kind"`
-	APIGroup string `json:"apiGroup"`
 }
 
 // +kubebuilder:object:root=true

@@ -25,6 +25,7 @@ import (
 	"kubeops.dev/taskqueue/pkg/queue"
 
 	"github.com/go-logr/logr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/errors"
 	cu "kmodules.xyz/client-go/client"
@@ -122,7 +123,7 @@ func (r *PendingTaskReconciler) syncQueuePoolOnce(ctx context.Context, logger lo
 	return errors.NewAggregate(errs)
 }
 
-func (r *PendingTaskReconciler) matchTaskQueue(ctx context.Context, taskType queueapi.TypedResourceReference) (string, error) {
+func (r *PendingTaskReconciler) matchTaskQueue(ctx context.Context, taskType metav1.GroupKind) (string, error) {
 	var taskQueueList queueapi.TaskQueueList
 	if err := r.List(ctx, &taskQueueList); err != nil {
 		return "", fmt.Errorf("failed to list TaskQueues: %w", err)
@@ -130,7 +131,7 @@ func (r *PendingTaskReconciler) matchTaskQueue(ctx context.Context, taskType que
 
 	for _, tq := range taskQueueList.Items {
 		for _, task := range tq.Spec.Tasks {
-			if task.Type.Kind == taskType.Kind && task.Type.APIGroup == taskType.APIGroup {
+			if task.Type.Kind == taskType.Kind && task.Type.Group == taskType.Group {
 				return tq.Name, nil
 			}
 		}

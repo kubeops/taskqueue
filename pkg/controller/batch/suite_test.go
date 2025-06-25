@@ -40,11 +40,11 @@ import (
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
 var (
-	ctx       context.Context
-	cancel    context.CancelFunc
-	testEnv   *envtest.Environment
-	cfg       *rest.Config
-	k8sClient client.Client
+	ctx      context.Context
+	cancel   context.CancelFunc
+	testEnv  *envtest.Environment
+	cfg      *rest.Config
+	kbClient client.Client
 )
 
 func TestControllers(t *testing.T) {
@@ -80,9 +80,9 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 
-	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	kbClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	Expect(err).NotTo(HaveOccurred())
-	Expect(k8sClient).NotTo(BeNil())
+	Expect(kbClient).NotTo(BeNil())
 })
 
 var _ = AfterSuite(func() {
