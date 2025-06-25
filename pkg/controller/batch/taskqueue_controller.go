@@ -334,9 +334,9 @@ func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion 
 	if tq.Status.TriggeredTasksStatus[typeRef] == nil {
 		tq.Status.TriggeredTasksStatus[typeRef] = make(map[string]queueapi.TaskPhase)
 	}
-	key, err := cache.MetaNamespaceKeyFunc(obj)
+	key, err := cache.MetaNamespaceKeyFunc(&obj)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get key for object: %w", err)
 	}
 	r.updateTasksPhase(tq, typeRef, key, queueapi.TaskPhaseInPending)
 	if err := r.Delete(ctx, pt); err != nil {
