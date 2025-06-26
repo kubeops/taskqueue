@@ -117,7 +117,7 @@ func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queue
 				errs = append(errs, err)
 				continue
 			}
-			if !shouldKeep { // Task is done=(failed/) — remove from status
+			if !shouldKeep { // Task is done=(failed/successful) — remove from status
 				shouldRequeue = true
 				r.deleteKeyFromTasksPhase(tq, typRef, statusKey)
 			} else if phase != "" {
