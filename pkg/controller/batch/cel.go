@@ -24,6 +24,31 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
+func evalCEL(obj *unstructured.Unstructured, expr string) (bool, error) {
+	phase, err := extractStatusPhase(obj)
+	if err != nil {
+		return false, err
+	}
+	if phase == nil {
+		return false, nil // no phase => rule doesn't match
+	}
+	if _, ok := phase.(string); !ok {
+		return false, fmt.Errorf("status.phase is not a string: got %T", phase)
+	}
+
+	env, err := createCELEnv()
+	if err != nil {
+		return false, fmt.Errorf("failed to create CEL environment: %v", err)
+	}
+
+	program, err := compileExpression(env, expr)
+	if err != nil {
+		return false, err
+	}
+
+	return evaluateCEL(program, map[string]any{"self": obj.Object})
+}
+
 func createCELEnv() (*cel.Env, error) {
 	return cel.NewEnv(
 		cel.Declarations(
@@ -76,29 +101,4 @@ func evaluateCEL(program cel.Program, input map[string]any) (bool, error) {
 		return false, fmt.Errorf("CEL expression did not return a boolean: got %T", out.Value())
 	}
 	return result, nil
-}
-
-func evalCEL(obj *unstructured.Unstructured, expr string) (bool, error) {
-	phase, err := extractStatusPhase(obj)
-	if err != nil {
-		return false, err
-	}
-	if phase == nil {
-		return false, nil // no phase => rule doesn't match
-	}
-	if _, ok := phase.(string); !ok {
-		return false, fmt.Errorf("status.phase is not a string: got %T", phase)
-	}
-
-	env, err := createCELEnv()
-	if err != nil {
-		return false, fmt.Errorf("failed to create CEL environment: %v", err)
-	}
-
-	program, err := compileExpression(env, expr)
-	if err != nil {
-		return false, err
-	}
-
-	return evaluateCEL(program, map[string]any{"self": obj.Object})
 }
