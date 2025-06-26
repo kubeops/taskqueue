@@ -163,7 +163,6 @@ func NewCmdRun() *cobra.Command {
 				setupLog.Error(err, "unable to start manager")
 				os.Exit(1)
 			}
-			mapOfWatchResources := make(map[schema.GroupVersionResource]struct{})
 			cfg := mgr.GetConfig()
 			cfg.QPS = 50000
 			cfg.Burst = 50000
@@ -191,8 +190,7 @@ func NewCmdRun() *cobra.Command {
 			newQueuePool := queue.NewSharedQueuePool()
 			if err = (&batchcontroller.TaskQueueReconciler{
 				Client:                 uncachedClient,
-				Scheme:                 mgr.GetScheme(),
-				MapOfWatchResources:    mapOfWatchResources,
+				StartedWatchersByGVR:   make(map[schema.GroupVersionResource]struct{}),
 				QueuePool:              newQueuePool,
 				DiscoveryClient:        discoveryClient,
 				DynamicInformerFactory: dynamicinformer.NewDynamicSharedInformerFactory(dynClient, 0),

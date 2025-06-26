@@ -30,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -52,11 +51,10 @@ import (
 type TaskQueueReconciler struct {
 	client.Client
 	once                   sync.Once
-	Scheme                 *runtime.Scheme
 	DiscoveryClient        *discovery.DiscoveryClient
 	DynamicInformerFactory dynamicinformer.DynamicSharedInformerFactory
 	QueuePool              *queue.SharedQueuePool
-	MapOfWatchResources    map[schema.GroupVersionResource]struct{}
+	StartedWatchersByGVR   map[schema.GroupVersionResource]struct{}
 }
 
 func (r *TaskQueueReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -118,12 +116,12 @@ func (r *TaskQueueReconciler) handleDeletion(ctx context.Context, logger logr.Lo
 }
 
 func (r *TaskQueueReconciler) startWatchingResource(ctx context.Context, gvr schema.GroupVersionResource) {
-	var shouldStart bool = true
+	var shouldStart = true
 	if r.QueuePool.ExecuteFunc(func() {
-		if _, exist := r.MapOfWatchResources[gvr]; exist {
+		if _, exist := r.StartedWatchersByGVR[gvr]; exist {
 			shouldStart = false
 		}
-		r.MapOfWatchResources[gvr] = struct{}{}
+		r.StartedWatchersByGVR[gvr] = struct{}{}
 	}); !shouldStart {
 		return
 	}
@@ -338,7 +336,7 @@ func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion 
 	if err != nil {
 		return fmt.Errorf("failed to get key for object: %w", err)
 	}
-	r.updateTasksPhase(tq, typeRef, key, queueapi.TaskPhaseInPending)
+	r.updateTasksPhase(tq, typeRef, key, queueapi.TaskPhasePending)
 	if err := r.Delete(ctx, pt); err != nil {
 		return fmt.Errorf("failed to delete task object: %w", err)
 	}
@@ -373,7 +371,7 @@ func (r *TaskQueueReconciler) getInProgressTaskCount(tq *queueapi.TaskQueue) int
 	for _, statusMap := range tq.Status.TriggeredTasksStatus {
 		for _, phase := range statusMap {
 			if phase == queueapi.TaskPhaseInProgress ||
-				phase == queueapi.TaskPhaseInPending {
+				phase == queueapi.TaskPhasePending {
 				count++
 			}
 		}

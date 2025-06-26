@@ -23,7 +23,7 @@ import (
 type TaskPhase string
 
 const (
-	TaskPhaseInPending  TaskPhase = "Pending"
+	TaskPhasePending    TaskPhase = "Pending"
 	TaskPhaseInProgress TaskPhase = "Progress"
 	TaskPhaseFailed     TaskPhase = "Failed"
 	TaskPhaseSuccessful TaskPhase = "Successful"
