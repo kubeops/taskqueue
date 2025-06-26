@@ -69,7 +69,6 @@ var _ = Describe("TaskQueue Controller", func() {
 			By("Reconciling the created resource")
 			controllerReconciler := &TaskQueueReconciler{
 				Client: kbClient,
-				Scheme: kbClient.Scheme(),
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{

@@ -72,7 +72,7 @@ func (r *TaskQueueReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	if !needsRequeue {
 		if err := r.processPendingTasks(ctx, logger, tq); err != nil {
-			return ctrl.Result{}, fmt.Errorf("process pending: %w", err)
+			return ctrl.Result{}, fmt.Errorf("failed to process pending tasks: %w", err)
 		}
 	}
 
@@ -117,7 +117,7 @@ func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queue
 				errs = append(errs, err)
 				continue
 			}
-			if !shouldKeep {
+			if !shouldKeep { // Task is done=(failed/) — remove from status
 				shouldRequeue = true
 				r.deleteKeyFromTasksPhase(tq, typRef, statusKey)
 			} else if phase != "" {
@@ -131,17 +131,22 @@ func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queue
 
 func (r *TaskQueueReconciler) evaluateObjectPhase(obj *unstructured.Unstructured, tq *queueapi.TaskQueue) (bool, queueapi.TaskPhase, error) {
 	ruleSet := r.getRuleSetFromTaskQueue(obj, tq)
-
-	if ok, err := evalCEL(obj, ruleSet.Success); err != nil || ok {
+	if matched, err := evalCEL(obj, ruleSet.Success); err != nil {
 		return false, "", err
+	} else if matched {
+		return false, "", nil // Task is done (successful) — remove from status
 	}
 
-	if ok, err := evalCEL(obj, ruleSet.Failed); err != nil || ok {
+	if matched, err := evalCEL(obj, ruleSet.Failed); err != nil {
 		return false, "", err
+	} else if matched {
+		return false, "", nil // Task is done (failed) — remove from status
 	}
 
-	if ok, err := evalCEL(obj, ruleSet.InProgress); err != nil || ok { // If the object is in progress, we keep it in the status map
-		return true, queueapi.TaskPhaseInProgress, err
+	if matched, err := evalCEL(obj, ruleSet.InProgress); err != nil {
+		return false, "", err
+	} else if matched {
+		return true, queueapi.TaskPhaseInProgress, nil // Still in progress — keep tracking
 	}
 
 	return true, "", nil

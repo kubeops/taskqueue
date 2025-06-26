@@ -19,7 +19,6 @@ package batch
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	queueapi "kubeops.dev/taskqueue/apis/batch/v1alpha1"
 
@@ -99,7 +98,7 @@ func (r *TaskQueueReconciler) handleResourcesUpdate(ctx context.Context, obj int
 		return nil
 	}
 	if _, err := r.syncTaskQueueStatus(ctx, tq, func(key string) bool {
-		return strings.HasSuffix(key, newObj.GetName())
+		return key == newObj.GetName()
 	}); err != nil {
 		return fmt.Errorf("failed to sync task status: %w", err)
 	}

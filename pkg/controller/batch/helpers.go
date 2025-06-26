@@ -21,8 +21,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/checker/decls"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -30,52 +28,6 @@ import (
 	"k8s.io/client-go/discovery"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-func evalCEL(obj *unstructured.Unstructured, expr string) (bool, error) {
-	if obj == nil || obj.Object == nil {
-		return false, fmt.Errorf("object is nil or empty")
-	}
-	status, found, err := unstructured.NestedMap(obj.Object, "status")
-	if err != nil {
-		return false, fmt.Errorf("failed to access status field: %v", err)
-	}
-	if !found {
-		return false, nil
-	}
-	phase, ok := status["phase"]
-	if !ok {
-		return false, nil
-	}
-	if _, ok := phase.(string); !ok {
-		return false, fmt.Errorf("status.phase is not a string: got %T", phase)
-	}
-
-	env, err := cel.NewEnv(cel.Declarations(decls.NewVar("self", decls.NewMapType(decls.String, decls.Dyn))))
-	if err != nil {
-		return false, fmt.Errorf("failed to create CEL environment: %v", err)
-	}
-	ast, issues := env.Compile(expr)
-	if issues != nil && issues.Err() != nil {
-		return false, fmt.Errorf("failed to compile CEL expression %q: %v", expr, issues.Err())
-	}
-	program, err := env.Program(ast)
-	if err != nil {
-		return false, fmt.Errorf("failed to create CEL program: %v", err)
-	}
-	out, _, err := program.Eval(map[string]any{
-		"self": obj.Object,
-	})
-	if err != nil {
-		return false, fmt.Errorf("failed to evaluate CEL expression: %v", err)
-	}
-
-	result, ok := out.Value().(bool)
-	if !ok {
-		return false, fmt.Errorf("CEL expression %q did not return a boolean: got %T", expr, out.Value())
-	}
-
-	return result, nil
-}
 
 func getGVKFromObj(u unstructured.Unstructured) string {
 	group := u.GroupVersionKind().Group
