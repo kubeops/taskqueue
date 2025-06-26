@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"sync"
 
 	queueapi "kubeops.dev/taskqueue/apis/batch/v1alpha1"
@@ -28,7 +27,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,16 +34,11 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/util/workqueue"
-	"k8s.io/klog/v2"
 	cu "kmodules.xyz/client-go/client"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 type TaskQueueReconciler struct {
@@ -113,58 +106,6 @@ func (r *TaskQueueReconciler) handleDeletion(ctx context.Context, logger logr.Lo
 	}
 	logger.Info("TaskQueue deleted successfully", "name", tq.Name)
 	return ctrl.Result{}, nil
-}
-
-func (r *TaskQueueReconciler) startWatchingResource(ctx context.Context, gvr schema.GroupVersionResource) {
-	var shouldStart = true
-	if r.QueuePool.ExecuteFunc(func() {
-		if _, exist := r.StartedWatchersByGVR[gvr]; exist {
-			shouldStart = false
-		}
-		r.StartedWatchersByGVR[gvr] = struct{}{}
-	}); !shouldStart {
-		return
-	}
-
-	_, _ = r.DynamicInformerFactory.ForResource(gvr).Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		UpdateFunc: func(old, new interface{}) {
-			if err := r.handleResourcesUpdate(ctx, new); err != nil {
-				klog.Errorf("failed to handle resources update: %v", err)
-			}
-		},
-		DeleteFunc: func(delObj interface{}) {
-			if err := r.handleResourcesUpdate(ctx, delObj); err != nil {
-				klog.Errorf("failed to handle resources update: %v", err)
-			}
-		},
-	})
-
-	r.DynamicInformerFactory.Start(make(chan struct{}))
-}
-
-func (r *TaskQueueReconciler) handleResourcesUpdate(ctx context.Context, obj interface{}) error {
-	newObj := obj.(*unstructured.Unstructured)
-	taskQueueName, err := r.findMatchingTaskQueue(ctx, newObj)
-	if err != nil && !errors.IsNotFound(err) {
-		return fmt.Errorf("failed to find matching TaskQueue: %w", err)
-	}
-	tq, err := r.getTaskQueue(ctx, "", taskQueueName)
-	if err != nil {
-		return fmt.Errorf("failed to get TaskQueue: %w", err)
-	}
-	if tq == nil {
-		return nil
-	}
-	if _, err := r.syncTaskQueueStatus(ctx, tq, func(key string) bool {
-		return strings.HasSuffix(key, newObj.GetName())
-	}); err != nil {
-		return fmt.Errorf("failed to sync task status: %w", err)
-	}
-
-	if err := r.updateStatus(ctx, tq); err != nil {
-		return fmt.Errorf("failed to update TaskQueue status: %w", err)
-	}
-	return err
 }
 
 func (r *TaskQueueReconciler) findMatchingTaskQueue(ctx context.Context, obj *unstructured.Unstructured) (string, error) {
@@ -275,7 +216,7 @@ func (r *TaskQueueReconciler) processPendingTasks(ctx context.Context, logger lo
 		logger.Info("TaskQueue not found in queue pool, skipping processing", "taskQueue", tq.Name)
 		return nil
 	}
-	if err := r.syncWatchingResourceOnce(ctx, logger, tq); err != nil {
+	if err := r.syncWatchingResourcesOnce(ctx, logger, tq); err != nil {
 		return fmt.Errorf("failed to sync watching resources: %w", err)
 	}
 	inProgress := r.getInProgressTaskCount(tq)
@@ -294,23 +235,6 @@ func (r *TaskQueueReconciler) processPendingTasks(ctx context.Context, logger lo
 		r.startWatchingResource(ctx, gvr)
 	}
 	return nil
-}
-
-func (r *TaskQueueReconciler) syncWatchingResourceOnce(ctx context.Context, logger logr.Logger, tq *queueapi.TaskQueue) error {
-	var errs []error
-	r.once.Do(func() {
-		logger.Info("Syncing watching resources for TaskQueue", "taskQueue", tq.Name)
-		for typeRef := range tq.Status.TriggeredTasksStatus {
-			gvk := parseGVKFromKey(typeRef)
-			gvr, err := getGVR(r.DiscoveryClient, metav1.GroupKind{Group: gvk.Group, Kind: gvk.Kind})
-			if err != nil {
-				errs = append(errs, fmt.Errorf("failed to get GVR: %w", err))
-				return
-			}
-			r.startWatchingResource(ctx, gvr)
-		}
-	})
-	return utilerrors.NewAggregate(errs)
 }
 
 func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion string, tq *queueapi.TaskQueue, pt *queueapi.PendingTask) error {
@@ -390,26 +314,4 @@ func (r *TaskQueueReconciler) getPendingTask(ctx context.Context, tq *queueapi.T
 		return nil, err
 	}
 	return pendingTask, nil
-}
-
-func (r *TaskQueueReconciler) handlerForUpdatePendingTask(ctx context.Context, e event.TypedUpdateEvent[client.Object], w workqueue.TypedRateLimitingInterface[reconcile.Request]) {
-	pt := e.ObjectNew.(*queueapi.PendingTask)
-	if pt.Status.TaskQueueName != "" {
-		log.FromContext(ctx).V(1).Info("PendingTask updated, enqueuing referenced TaskQueue", "pendingTaskName", pt.Name, "taskQueueName", pt.Status.TaskQueueName)
-		w.Add(reconcile.Request{
-			NamespacedName: types.NamespacedName{Name: pt.Status.TaskQueueName},
-		})
-	}
-}
-
-func (r *TaskQueueReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&queueapi.TaskQueue{}).
-		Watches(
-			&queueapi.PendingTask{},
-			&handler.Funcs{
-				UpdateFunc: r.handlerForUpdatePendingTask,
-			},
-		).
-		Complete(r)
 }
