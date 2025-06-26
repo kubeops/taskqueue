@@ -37,7 +37,6 @@ import (
 	cu "kmodules.xyz/client-go/client"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -82,57 +81,6 @@ func (r *TaskQueueReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	return ctrl.Result{Requeue: needsRequeue}, nil
-}
-
-func (r *TaskQueueReconciler) getTaskQueue(ctx context.Context, namespace, name string) (*queueapi.TaskQueue, error) {
-	var err error
-	tq := &queueapi.TaskQueue{}
-	if err = r.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, tq); err != nil {
-		return nil, client.IgnoreNotFound(err)
-	}
-	return tq, nil
-}
-
-func (r *TaskQueueReconciler) handleDeletion(ctx context.Context, logger logr.Logger, tq *queueapi.TaskQueue) (ctrl.Result, error) {
-	logger.Info("Handling deletion")
-	r.QueuePool.Remove(tq.Name)
-
-	if controllerutil.ContainsFinalizer(tq, taskQueueFinalizer) {
-		_, err := cu.CreateOrPatch(ctx, r.Client, tq, func(obj client.Object, createOp bool) client.Object {
-			controllerutil.RemoveFinalizer(obj, taskQueueFinalizer)
-			return obj
-		})
-		return ctrl.Result{}, err
-	}
-	logger.Info("TaskQueue deleted successfully", "name", tq.Name)
-	return ctrl.Result{}, nil
-}
-
-func (r *TaskQueueReconciler) findMatchingTaskQueue(ctx context.Context, obj *unstructured.Unstructured) (string, error) {
-	var taskQueueList queueapi.TaskQueueList
-	if err := r.List(ctx, &taskQueueList); err != nil {
-		return "", fmt.Errorf("failed to list TaskQueues: %w", err)
-	}
-	for _, tq := range taskQueueList.Items {
-		for _, task := range tq.Spec.Tasks {
-			if task.Type.Kind == obj.GetKind() && task.Type.Group == obj.GroupVersionKind().Group {
-				return tq.Name, nil
-			}
-		}
-	}
-	return "", nil
-}
-
-func (r *TaskQueueReconciler) ensureFinalizer(ctx context.Context, logger logr.Logger, tq *queueapi.TaskQueue) error {
-	if !controllerutil.ContainsFinalizer(tq, taskQueueFinalizer) {
-		logger.Info("Adding finalizer for TaskQueue")
-		_, err := cu.CreateOrPatch(ctx, r.Client, tq, func(obj client.Object, createOp bool) client.Object {
-			controllerutil.AddFinalizer(obj, taskQueueFinalizer)
-			return obj
-		})
-		return err
-	}
-	return nil
 }
 
 func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queueapi.TaskQueue, keyFilter func(key string) bool) (bool, error) {
@@ -199,18 +147,6 @@ func (r *TaskQueueReconciler) evaluateObjectPhase(obj *unstructured.Unstructured
 	return true, "", nil
 }
 
-func (r *TaskQueueReconciler) deleteKeyFromTasksPhase(tq *queueapi.TaskQueue, typeRefKey string, statusKey string) {
-	r.QueuePool.ExecuteFunc(func() {
-		delete(tq.Status.TriggeredTasksStatus[typeRefKey], statusKey)
-	})
-}
-
-func (r *TaskQueueReconciler) updateTasksPhase(tq *queueapi.TaskQueue, gvk string, key string, phase queueapi.TaskPhase) {
-	r.QueuePool.ExecuteFunc(func() {
-		tq.Status.TriggeredTasksStatus[gvk][key] = phase
-	})
-}
-
 func (r *TaskQueueReconciler) processPendingTasks(ctx context.Context, logger logr.Logger, tq *queueapi.TaskQueue) error {
 	if !r.QueuePool.Exists(tq.Name) {
 		logger.Info("TaskQueue not found in queue pool, skipping processing", "taskQueue", tq.Name)
@@ -235,6 +171,19 @@ func (r *TaskQueueReconciler) processPendingTasks(ctx context.Context, logger lo
 		r.startWatchingResource(ctx, gvr)
 	}
 	return nil
+}
+
+func (r *TaskQueueReconciler) getPendingTask(ctx context.Context, tq *queueapi.TaskQueue) (*queueapi.PendingTask, error) {
+	key, shutting := r.QueuePool.Dequeue(tq.Name)
+	if shutting {
+		return nil, nil
+	}
+
+	pendingTask := &queueapi.PendingTask{}
+	if err := r.Get(ctx, types.NamespacedName{Name: key}, pendingTask); err != nil {
+		return nil, err
+	}
+	return pendingTask, nil
 }
 
 func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion string, tq *queueapi.TaskQueue, pt *queueapi.PendingTask) error {
@@ -265,53 +214,4 @@ func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion 
 		return fmt.Errorf("failed to delete task object: %w", err)
 	}
 	return nil
-}
-
-func (r *TaskQueueReconciler) updateStatus(ctx context.Context, tq *queueapi.TaskQueue) error {
-	_, err := cu.PatchStatus(
-		ctx,
-		r.Client,
-		tq,
-		func(obj client.Object) client.Object {
-			in := obj.(*queueapi.TaskQueue)
-			in.Status = tq.Status
-			return in
-		},
-	)
-	return client.IgnoreNotFound(err)
-}
-
-func (r *TaskQueueReconciler) getRuleSetFromTaskQueue(obj *unstructured.Unstructured, tq *queueapi.TaskQueue) queueapi.ObjectPhaseRules {
-	for _, task := range tq.Spec.Tasks {
-		if task.Type.Kind == obj.GetKind() && task.Type.Group == obj.GroupVersionKind().Group {
-			return task.Rules
-		}
-	}
-	return queueapi.ObjectPhaseRules{}
-}
-
-func (r *TaskQueueReconciler) getInProgressTaskCount(tq *queueapi.TaskQueue) int {
-	count := 0
-	for _, statusMap := range tq.Status.TriggeredTasksStatus {
-		for _, phase := range statusMap {
-			if phase == queueapi.TaskPhaseInProgress ||
-				phase == queueapi.TaskPhasePending {
-				count++
-			}
-		}
-	}
-	return count
-}
-
-func (r *TaskQueueReconciler) getPendingTask(ctx context.Context, tq *queueapi.TaskQueue) (*queueapi.PendingTask, error) {
-	key, shutting := r.QueuePool.Dequeue(tq.Name)
-	if shutting {
-		return nil, nil
-	}
-
-	pendingTask := &queueapi.PendingTask{}
-	if err := r.Get(ctx, types.NamespacedName{Name: key}, pendingTask); err != nil {
-		return nil, err
-	}
-	return pendingTask, nil
 }
