@@ -98,7 +98,7 @@ func (r *TaskQueueReconciler) handleResourcesUpdate(ctx context.Context, obj int
 		return nil
 	}
 	if _, err := r.syncTaskQueueStatus(ctx, tq, func(key string) bool {
-		return key == newObj.GetName()
+		return key == fmt.Sprintf("%s/%s", newObj.GetNamespace(), newObj.GetName())
 	}); err != nil {
 		return fmt.Errorf("failed to sync task status: %w", err)
 	}
