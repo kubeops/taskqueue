@@ -126,6 +126,9 @@ func (r *TaskQueueReconciler) syncTaskQueueStatus(ctx context.Context, tq *queue
 			}
 		}
 	}
+	if r.getInProgressTaskCount(tq) < tq.Spec.MaxConcurrentTasks { // In case of fewer tasks than max concurrent, we should processPendingTasks
+		shouldRequeue = false
+	}
 	return shouldRequeue, utilerrors.NewAggregate(errs)
 }
 
