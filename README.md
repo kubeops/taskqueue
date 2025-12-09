@@ -6,7 +6,7 @@
 
 # taskqueue
 
-KubeOps TaskQueue is a Kubernetes controller that manages a queue of tasks. It is designed to be used task processing system by mainting a queue with max concurrent task at a time.
+TaskQueue is a Kubernetes controller that manages a queue of tasks. It is designed to be used task processing system by mainting a queue with max concurrent task at a time.
 
 ## Deploy into a Kubernetes Cluster
 
