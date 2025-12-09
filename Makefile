@@ -12,20 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Copyright AppsCode Inc. and Contributors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 SHELL=/bin/bash -o pipefail
 
 PRODUCT_OWNER_NAME := appscode
@@ -292,8 +278,6 @@ unit-tests: $(BUILD_DIRS)
 	        ./hack/test.sh $(SRC_PKGS)                          \
 	    "
 
-ADDTL_LINTERS   := gofmt,goimports,unparam
-
 .PHONY: lint
 lint: $(BUILD_DIRS)
 	@echo "running linter"
@@ -310,7 +294,7 @@ lint: $(BUILD_DIRS)
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 	    --env GOFLAGS="-mod=vendor"                             \
 	    $(BUILD_IMAGE)                                          \
-	    golangci-lint run --enable $(ADDTL_LINTERS) --max-same-issues=100 --timeout=10m --exclude-files="generated.*\.go$\" --exclude-dirs-use-default --exclude-dirs=client,vendor
+	    golangci-lint run
 
 $(BUILD_DIRS):
 	@mkdir -p $@
