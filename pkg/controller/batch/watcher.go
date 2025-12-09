@@ -69,12 +69,12 @@ func (r *TaskQueueReconciler) startWatchingResource(ctx context.Context, gvr sch
 	}
 
 	_, _ = r.DynamicInformerFactory.ForResource(gvr).Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		UpdateFunc: func(old, new interface{}) {
+		UpdateFunc: func(old, new any) {
 			if err := r.handleResourcesUpdate(ctx, new); err != nil {
 				klog.Errorf("failed to handle resources update: %v", err)
 			}
 		},
-		DeleteFunc: func(delObj interface{}) {
+		DeleteFunc: func(delObj any) {
 			if err := r.handleResourcesUpdate(ctx, delObj); err != nil {
 				klog.Errorf("failed to handle resources update: %v", err)
 			}
@@ -84,7 +84,7 @@ func (r *TaskQueueReconciler) startWatchingResource(ctx context.Context, gvr sch
 	r.DynamicInformerFactory.Start(make(chan struct{}))
 }
 
-func (r *TaskQueueReconciler) handleResourcesUpdate(ctx context.Context, obj interface{}) error {
+func (r *TaskQueueReconciler) handleResourcesUpdate(ctx context.Context, obj any) error {
 	newObj := obj.(*unstructured.Unstructured)
 	taskQueueName, err := r.findMatchingTaskQueue(ctx, newObj)
 	if err != nil && !errors.IsNotFound(err) {
