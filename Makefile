@@ -473,3 +473,9 @@ mv "$(LOCALBIN)/$$(basename "$(1)")" "$(1)-$(3)" ;\
 } ;\
 ln -sf "$$(realpath "$(1)-$(3)")" "$(1)"
 endef
+
+.PHONY: docker-certify-redhat
+docker-certify-redhat:
+	@preflight check container $(IMAGE):$(VERSION_UBI) \
+		--submit \
+		--certification-component-id=6957d07e9d3545da14d48e8d
