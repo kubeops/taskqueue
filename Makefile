@@ -147,7 +147,7 @@ version:
 	@echo commit_hash=$(commit_hash)
 	@echo commit_timestamp=$(commit_timestamp)
 
-gen:
+gen: generate manifests
 	@true
 
 fmt: $(BUILD_DIRS)
@@ -408,47 +408,6 @@ release:
 	fi
 	@$(MAKE) clean all-build all-push docker-manifest --no-print-directory
 
-
-
-## Location to install dependencies to
-#LOCALBIN ?= $(shell pwd)/bin
-LOCALBIN ?= /home/arnob/go/bin
-$(LOCALBIN):
-	mkdir -p $(LOCALBIN)
-
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
-
-
-.PHONY: label-crds
-label-crds:
-	@for f in crds/*.yaml; do \
-		echo "applying app.kubernetes.io/name=taskqueue label to $$f"; \
-		kubectl label --overwrite -f $$f --local=true -o yaml app.kubernetes.io/name=taskqueue > bin/crd.yaml; \
-		mv bin/crd.yaml $$f; \
-	done
-	@echo ""
-
-
-
-.PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	$(call go-forked-tool,$(CONTROLLER_GEN),https://github.com/kmodules/controller-tools,$(CONTROLLER_TOOLS_VERSION))
-
-
-
-.PHONY: manifests
-manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:allowDangerousTypes=true,maxDescLen=0 paths="./..." output:crd:artifacts:config=crds
-	@$(MAKE) label-crds --no-print-directory
-
-
-.PHONY: generate
-generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/license/go.txt" paths="./..."
-
-
-
 .PHONY: clean
 clean:
 	rm -rf .go bin
@@ -464,3 +423,53 @@ deploy-to-kind: push-to-kind install
 
 .PHONY: deploy
 deploy: uninstall push install
+
+## Location to install dependencies to
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+
+## Tool Versions
+KUSTOMIZE_VERSION ?= v5.7.1
+CONTROLLER_TOOLS_VERSION ?= v0.19.0
+
+.PHONY: label-crds
+label-crds:
+	@for f in crds/*.yaml; do \
+		echo "applying app.kubernetes.io/name=taskqueue label to $$f"; \
+		kubectl label --overwrite -f $$f --local=true -o yaml app.kubernetes.io/name=taskqueue > bin/crd.yaml; \
+		mv bin/crd.yaml $$f; \
+	done
+	@echo ""
+
+.PHONY: controller-gen
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen,$(CONTROLLER_TOOLS_VERSION))
+
+.PHONY: manifests
+manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:allowDangerousTypes=true,maxDescLen=0 paths="./..." output:crd:artifacts:config=crds
+	@$(MAKE) label-crds --no-print-directory
+
+.PHONY: generate
+generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+	$(CONTROLLER_GEN) object:headerFile="hack/license/go.txt" paths="./..."
+
+# go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
+# $1 - target path with name of binary
+# $2 - package url which can be installed
+# $3 - specific version of package
+define go-install-tool
+@[ -f "$(1)-$(3)" ] && [ "$$(readlink -- "$(1)" 2>/dev/null)" = "$(1)-$(3)" ] || { \
+set -e; \
+package=$(2)@$(3) ;\
+echo "Downloading $${package}" ;\
+rm -f "$(1)" ;\
+GOBIN="$(LOCALBIN)" go install $${package} ;\
+mv "$(LOCALBIN)/$$(basename "$(1)")" "$(1)-$(3)" ;\
+} ;\
+ln -sf "$$(realpath "$(1)-$(3)")" "$(1)"
+endef

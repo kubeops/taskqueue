@@ -20,7 +20,8 @@ import (
 	"fmt"
 
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/checker/decls"
+	"github.com/google/cel-go/common/decls"
+	"github.com/google/cel-go/common/types"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -51,8 +52,8 @@ func evalCEL(obj *unstructured.Unstructured, expr string) (bool, error) {
 
 func createCELEnv() (*cel.Env, error) {
 	return cel.NewEnv(
-		cel.Declarations(
-			decls.NewVar("self", decls.NewMapType(decls.String, decls.Dyn)),
+		cel.VariableDecls(
+			decls.NewVariable("self", types.NewMapType(types.StringType, types.DynType)),
 		),
 	)
 }
