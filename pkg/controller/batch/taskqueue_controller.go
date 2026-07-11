@@ -201,7 +201,8 @@ func (r *TaskQueueReconciler) createTasksObject(ctx context.Context, grpVersion 
 	}
 	obj.SetKind(pt.Spec.TaskType.Kind)
 	obj.SetAPIVersion(grpVersion)
-	if _, err := cu.CreateOrPatch(ctx, r.Client, &obj,
+	if _, err := cu.CreateOrPatch(
+		ctx, r.Client, &obj,
 		func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*unstructured.Unstructured)
 			return in
